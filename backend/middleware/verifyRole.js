@@ -1,4 +1,4 @@
-const verifyRoles = (userRole)=>{
+const verifyRole = (userRole)=>{
   return (req,res, next)=>{
     if(!req.role) return res.sendStatus(403);
     if(req.role !== userRole) return res.sendStatus(403);
@@ -7,4 +7,4 @@ const verifyRoles = (userRole)=>{
 }
 
 
-export default verifyRoles;
+export default verifyRole;
