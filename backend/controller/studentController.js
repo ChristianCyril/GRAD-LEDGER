@@ -40,3 +40,4 @@ const handleSearchStudent = async (req, res) => {
     console.error(error);
   }
 }
+export default handleSearchStudent

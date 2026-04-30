@@ -58,7 +58,12 @@ model RefreshToken {
   id         String   @id @default(uuid())
   token      String
   user_id    String
+  device_id  String
+  user_agent String?
+  created_at DateTime @default(now())
   user       User @relation(fields:[user_id], references:[user_id], onDelete: Cascade)
+
+  @@unique([user_id, device_id])
 }
 
 model Student {
