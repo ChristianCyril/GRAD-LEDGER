@@ -1,14 +1,13 @@
-
 generator client {
   provider = "prisma-client-js"
 }
-
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
+// --- Enums ---
 
 enum ClearanceStatus {
   Cleared
@@ -33,29 +32,63 @@ enum UserRole {
 
 enum Action {
   issued
-  revoke
+  revoked
+  batch_issued
+  credentials_resent
+}
+
+// --- Core Models ---
+
+model User {
+  user_id       String    @id @default(uuid())
+  email         String    @unique
+  password      String
+  role          UserRole
+  refresh_token RefreshToken[]
+  first_name    String
+  last_name     String
+  created_at    DateTime  @default(now())
+
+  // One-to-One Subtype relations
+  student       Student?
+  admin         Admin?
+}
+
+model RefreshToken {
+  id         String   @id @default(uuid())
+  token      String
+  user_id    String
+  user       User @relation(fields:[user_id], references:[user_id], onDelete: Cascade)
 }
 
 model Student {
-  student_id        String             @id
-  first_name        String
-  last_name         String
-  phone_number      String?
-  nationality       String?
-  date_of_birth     DateTime?
-  academic_records  AcademicRecord[]
-  portal_credential PortalCredential?
-  created_at        DateTime           @default(now())
+  // Shared Primary Key: This is both the PK and the FK to User
+  user_id          String           @id
+  user             User             @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+  student_id       String           @unique 
+  phone_number     String?
+  nationality      String?
+  date_of_birth    DateTime?
+  created_at       DateTime         @default(now())
+
+  academic_records AcademicRecord[]
 }
 
+model Admin {
+  user_id       String        @id
+  user          User          @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+  activity_logs ActivityLog[]
+}
+
+
 model Faculty {
-  faculty_id  String       @id
+  faculty_id  String       @id @default(uuid())
   name        String
   departments Department[]
 }
 
 model Department {
-  department_id String      @id
+  department_id String      @id @default(uuid())
   name          String
   faculty_id    String
   faculty       Faculty     @relation(fields: [faculty_id], references: [faculty_id])
@@ -63,66 +96,46 @@ model Department {
 }
 
 model Programme {
-  programme_id     String           @id
+  programme_id     String           @id @default(uuid())
   name             String
   department_id    String
   department       Department       @relation(fields: [department_id], references: [department_id])
   academic_records AcademicRecord[]
 }
 
+
+
 model AcademicRecord {
-  record_id          String            @id
-  student_id         String
+  record_id          String           @id @default(uuid())
+  student_user_id    String           
   programme_id       String
   entry_year         Int
   graduation_year    Int
   final_gpa          Float?
-  clearance_status   ClearanceStatus   @default(Not_Cleared)
+  clearance_status   ClearanceStatus  @default(Not_Cleared)
   certificate_status CertificateStatus @default(Not_Issued)
-  student            Student           @relation(fields: [student_id], references: [student_id])
-  programme          Programme         @relation(fields: [programme_id], references: [programme_id])
-  certificates       Certificate?
-}
-
-model Admin {
-  admin_id         String    @id
-  name             String
-  email            String    @unique
-  password         String
-  refresh_token    String?
-  role       UserRole @default(admin)
-  created_at       DateTime  @default(now())
-  activity_logs ActivityLog[]
+  student            Student          @relation(fields: [student_user_id], references: [user_id])
+  programme          Programme        @relation(fields: [programme_id], references: [programme_id])
+  certificate        Certificate?
 }
 
 model Certificate {
-  cert_id         String                  @id
-  record_id       String             @unique
-  hash            String  @unique
-  tx_hash   String? @unique
+  cert_id         String                  @id @default(uuid())
+  record_id       String                  @unique 
+  hash            String                  @unique 
+  tx_hash         String?                 @unique 
   status          CertificateRecordStatus @default(Pending)
   issued_at       DateTime                @default(now())
   revoked_at      DateTime?
   academic_record AcademicRecord          @relation(fields: [record_id], references: [record_id])
 }
 
-model PortalCredential {
-  email            String  @unique
-  credential_id    Int       @id @default(autoincrement())
-  student_id       String    @unique
-  password         String
-  role             UserRole @default(student)
-  refresh_token    String?
-  created_at       DateTime  @default(now())
-  student          Student   @relation(fields: [student_id], references: [student_id])
-}
-
 model ActivityLog {
   log_id      String   @id @default(uuid())
-  admin_id    String
-  action      Action  
-  target_id   String   
+  admin_id    String   // Foreign key to the Admin (user_id)
+  action      Action
+  target_id   String   // Soft-link to the entity being acted upon (Student ID or Cert ID)
   reason      String?
   timestamp   DateTime @default(now())
-  admin       Admin    @relation(fields: [admin_id], references: [admin_id])
+  admin       Admin    @relation(fields: [admin_id], references: [user_id])
 }
