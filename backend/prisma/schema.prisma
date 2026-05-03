@@ -7,140 +7,209 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// --- Enums ---
+// ─── ENUMS ───────────────────────────────────────────────
 
-enum ClearanceStatus {
-  Cleared
-  Not_Cleared
+enum OrgType {
+  UNIVERSITY
+  COLLEGE
+  PROFESSIONAL_BODY
+  TRAINING_INSTITUTE
 }
 
-enum CertificateStatus {
-  Issued
-  Not_Issued
+enum OrgStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  DISABLED
 }
 
-enum CertificateRecordStatus {
-  Pending
-  Issued
-  Revoked
+enum UserStatus {
+  ACTIVE
+  DISABLED
 }
 
+enum CertStatus {
+  PENDING
+  CONFIRMED
+  FAILED
+  REVOKED
+}
+
+enum AuditAction {
+  CERTIFICATE_ISSUED
+  CERTIFICATE_REVOKED
+  ADMIN_CREATED
+  ADMIN_ENABLED
+  ADMIN_DISABLED
+  ORG_PROFILE_UPDATED
+}
+
+// Covers all roles that can hold a session (students excluded — no portal)
 enum UserRole {
-  admin
-  student
+  SUPER_ADMIN
+  ORG_SUPER_ADMIN
+  ORG_ADMIN
 }
 
-enum Action {
-  issued
-  revoked
-  batch_issued
-  credentials_resent
+// Covers the two org-level roles that issue certificates and appear in audit logs
+enum OrgUserRole {
+  ORG_SUPER_ADMIN
+  ORG_ADMIN
 }
 
-// --- Core Models ---
+// ─── MODELS ──────────────────────────────────────────────
 
-model User {
-  user_id       String    @id @default(uuid())
-  email         String    @unique
-  password      String
-  role          UserRole
-  refresh_token RefreshToken[]
-  first_name    String
-  last_name     String
-  created_at    DateTime  @default(now())
-
-  // One-to-One Subtype relations
-  student       Student?
-  admin         Admin?
+// Platform-level administrator. Only one exists in the system.
+model SuperAdmin {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  password_hash String
+  created_at    DateTime @default(now())
 }
 
+// An organisation registered on the platform.
+model Organisation {
+  id               String    @id @default(uuid())
+  name             String
+  code             String    @unique  // short identifier e.g. "UY1" used in org URLs and emails
+  type             OrgType
+  country          String
+  city             String
+  website          String?
+  logo_url         String?
+  official_email   String    @unique
+  phone            String
+  address          String
+  status           OrgStatus @default(PENDING)
+  rejection_reason String?
+  disabled_at      DateTime?
+
+  doc_incorporation    String?
+  doc_letter_of_intent String?
+  doc_accreditation    String?
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // Relations
+  users        OrgUser[]
+  students     Student[]
+  certificates Certificate[]
+  audit_logs   AuditLog[]
+}
+
+// Unified model for both Org Super Admin and Org Admin.
+// The role field determines capabilities — no separate tables needed.
+// Certificate and AuditLog both use a single clean FK to this model.
+model OrgUser {
+  id            String      @id @default(uuid())
+  org_id        String
+  role          OrgUserRole
+  full_name     String
+  job_title     String
+  email         String      @unique
+  phone         String
+  password_hash String
+  status        UserStatus  @default(ACTIVE)
+
+  password_reset_token   String?
+  password_reset_expires DateTime?
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // Relations
+  organisation Organisation  @relation(fields: [org_id], references: [id])
+  certificates Certificate[]
+  audit_logs   AuditLog[]
+}
+
+// A student who has been issued a certificate.
+// No authentication — students receive credentials by email only.
+// Scoped to an organisation: same real person at two orgs = two Student records.
+model Student {
+  id        String @id @default(uuid())
+  org_id    String
+  full_name String
+  matricule String
+  email     String
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // Relations
+  organisation Organisation  @relation(fields: [org_id], references: [id])
+  certificates Certificate[]
+
+  @@unique([org_id, matricule])
+  @@unique([org_id, email])
+}
+
+// A certificate issued to a student by an organisation.
+model Certificate {
+  id         String @id @default(uuid())
+  org_id     String
+  student_id String
+  issued_by_id String
+
+  // Academic details specific to this certificate
+  department         String
+  program            String
+  year_of_entry      Int
+  year_of_graduation Int
+  gpa                Float
+
+  // Blockchain & storage
+  certificate_hash String     @unique
+  cloudinary_url   String
+  tx_hash          String?
+
+  status        CertStatus @default(PENDING)
+  revoke_reason String?
+  issued_at     DateTime   @default(now())
+  revoked_at    DateTime?
+
+  // Relations
+  organisation Organisation @relation(fields: [org_id], references: [id])
+  student      Student      @relation(fields: [student_id], references: [id])
+  issued_by    OrgUser      @relation(fields: [issued_by_id], references: [id])
+
+  // Prevents the same organisation issuing duplicate credentials for the
+  // same student, program, and graduation year. Two different PDFs for
+  // the same student/program/year would pass the hash check but fail here.
+  @@unique([student_id, org_id, program, year_of_graduation])
+
+  @@index([org_id])
+  @@index([student_id])
+  @@index([status])
+}
+
+// Immutable record of every significant action performed within an org.
+model AuditLog {
+  id          String      @id @default(uuid())
+  org_id      String
+  actor_id    String
+  action      AuditAction
+  description String
+  created_at  DateTime    @default(now())
+
+  // Relations
+  organisation Organisation @relation(fields: [org_id], references: [id])
+  actor        OrgUser      @relation(fields: [actor_id], references: [id])
+
+  @@index([org_id])
+  @@index([created_at])
+}
+
+// One row per active session. Stores a hashed refresh token.
+// Supports multiple concurrent sessions per user.
 model RefreshToken {
   id         String   @id @default(uuid())
-  token      String
+  token      String   @unique
   user_id    String
-  device_id  String
-  user_agent String?
+  user_role  UserRole
+  expires_at DateTime
   created_at DateTime @default(now())
-  user       User @relation(fields:[user_id], references:[user_id], onDelete: Cascade)
 
-  @@unique([user_id, device_id])
-}
-
-model Student {
-  // Shared Primary Key: This is both the PK and the FK to User
-  user_id          String           @id
-  user             User             @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
-  student_id       String           @unique 
-  phone_number     String?
-  nationality      String?
-  date_of_birth    DateTime?
-  created_at       DateTime         @default(now())
-
-  academic_records AcademicRecord[]
-}
-
-model Admin {
-  user_id       String        @id
-  user          User          @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
-  activity_logs ActivityLog[]
-}
-
-
-model Faculty {
-  faculty_id  String       @id @default(uuid())
-  name        String
-  departments Department[]
-}
-
-model Department {
-  department_id String      @id @default(uuid())
-  name          String
-  faculty_id    String
-  faculty       Faculty     @relation(fields: [faculty_id], references: [faculty_id])
-  programmes    Programme[]
-}
-
-model Programme {
-  programme_id     String           @id @default(uuid())
-  name             String
-  department_id    String
-  department       Department       @relation(fields: [department_id], references: [department_id])
-  academic_records AcademicRecord[]
-}
-
-
-
-model AcademicRecord {
-  record_id          String           @id @default(uuid())
-  student_user_id    String           
-  programme_id       String
-  entry_year         Int
-  graduation_year    Int
-  final_gpa          Float?
-  clearance_status   ClearanceStatus  @default(Not_Cleared)
-  certificate_status CertificateStatus @default(Not_Issued)
-  student            Student          @relation(fields: [student_user_id], references: [user_id])
-  programme          Programme        @relation(fields: [programme_id], references: [programme_id])
-  certificate        Certificate?
-}
-
-model Certificate {
-  cert_id         String                  @id @default(uuid())
-  record_id       String                  @unique 
-  hash            String                  @unique 
-  tx_hash         String?                 @unique 
-  status          CertificateRecordStatus @default(Pending)
-  issued_at       DateTime                @default(now())
-  revoked_at      DateTime?
-  academic_record AcademicRecord          @relation(fields: [record_id], references: [record_id])
-}
-
-model ActivityLog {
-  log_id      String   @id @default(uuid())
-  admin_id    String   // Foreign key to the Admin (user_id)
-  action      Action
-  target_id   String   // Soft-link to the entity being acted upon (Student ID or Cert ID)
-  reason      String?
-  timestamp   DateTime @default(now())
-  admin       Admin    @relation(fields: [admin_id], references: [user_id])
+  @@index([user_id, user_role])
 }
