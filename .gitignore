@@ -2,3 +2,4 @@ node_modules/
 sprints.md
 user_stories.md
 backend/.env
+backend/.env.test
