@@ -15,5 +15,5 @@ app.use(cookieParser());
 
 
 app.listen(PORT,()=>{
-  console.log(`Server running on pot ${PORT}`)
+  console.log(`GRAD-LEDGER Server running on pot ${PORT}`)
 })
