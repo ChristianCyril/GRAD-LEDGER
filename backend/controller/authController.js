@@ -1,6 +1,8 @@
-import bcrypt from "bcryptjs";
+import bcrypt from 'bcrypt'
 import prisma from "../config/prisma.js";
 import { signAccessToken, signRefreshToken,verifyRefreshToken, } from "../service/jwtServices.js";
+import { sendPasswordResetEmail } from "../service/emailService.js";
+
 
 //For Platform Super Admin
 export const loginSuperAdmin = async (req, res) => {
@@ -370,10 +372,6 @@ export const logout = async (req, res) => {
   }
 };
 
-import crypto from "crypto";
-import bcrypt from "bcryptjs";
-import { prisma } from "../config/prisma.js";
-import { sendPasswordResetEmail } from "../utils/mailer.js";
 
 // ─── FORGOT PASSWORD ─────────────────────────────────────
 
