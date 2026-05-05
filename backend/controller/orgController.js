@@ -221,3 +221,129 @@ export const registerOrganisation = async (req, res) => {
     return res.status(500).json({ message: 'Internal server error' });
   }
 };
+
+//update organisation profile
+export const updateOrgProfile = async (req, res) => {
+  let tempFilePath = null;
+
+  try {
+    const orgId = req.user.orgId;
+    const {
+      name,
+      city,
+      website,
+      phone,
+      address
+    } = req.body;
+
+    // ── 1. Verify the organisation exists ────────────────────────────────────
+    const organisation = await prisma.organisation.findUnique({
+      where: { id: orgId }
+    });
+
+    if (!organisation) {
+      return res.status(404).json({ message: 'Organisation not found' });
+    }
+    
+    if (organisation.status === 'DISABLED') {
+      return res.status(403).json({ message: 'Cannot update profile of a disabled organisation' });
+    }
+
+    // ── 2. Validate that at least one field is being updated ─────────────────
+    const hasTextField = [name, city, website, phone, address]
+      .some((field) => field !== undefined);
+    const hasLogoFile  = !!req.file;
+
+    if (!hasTextField && !hasLogoFile) {
+      return res.status(400).json({ message: 'No fields provided to update' });
+    }
+
+    // ── 3. Upload new logo to Cloudinary if provided ─────────────────────────
+    let logo_url = undefined; // undefined means Prisma will leave the field unchanged
+
+    if (hasLogoFile) {
+      tempFilePath = req.file.path;
+
+      // Validate it is an image
+      const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
+      if (!allowedMimeTypes.includes(req.file.mimetype)) {
+        return res.status(400).json({
+          message: 'Logo must be a JPEG, PNG, or WebP image'
+        });
+      }
+
+      const uploadResult = await cloudinary.uploader.upload(req.file.path, {
+        folder:         'certchain/org-logos',
+        resource_type:  'image',
+        public_id:      `${orgId}-logo`,
+        overwrite:      true,  // replaces the previous logo for this org
+        transformation: [{ width: 400, height: 400, crop: 'limit' }]
+      });
+
+      logo_url = uploadResult.secure_url;
+
+      // Delete temp file after successful upload
+      fs.unlinkSync(tempFilePath);
+      tempFilePath = null;
+    }
+
+    // ── 4. Build the update payload ──────────────────────────────────────────
+    // Only include fields that were actually sent in the request
+    // Undefined fields are ignored by Prisma — existing values are preserved
+    const updateData = {};
+
+    if (name?.trim())    updateData.name    = name.trim();
+    if (city?.trim())    updateData.city    = city.trim();
+    if (phone?.trim())   updateData.phone   = phone.trim();
+    if (address?.trim()) updateData.address = address.trim();
+
+    // website can be cleared by sending an empty string
+    if (website !== undefined) {
+      updateData.website = website.trim() === '' ? null : website.trim();
+    }
+
+    if (logo_url !== undefined) {
+      updateData.logo_url = logo_url;
+    }
+
+    // ── 5. Persist the update ────────────────────────────────────────────────
+    const updated = await prisma.organisation.update({
+      where: { id: orgId },
+      data:  updateData,
+      select: {
+        id:             true,
+        name:           true,
+        code:           true,
+        type:           true,
+        country:        true,
+        city:           true,
+        website:        true,
+        logo_url:       true,
+        official_email: true,
+        phone:          true,
+        address:        true,
+        status:         true,
+        updated_at:     true
+      }
+    });
+
+    return res.status(200).json({
+      message: 'Organisation profile updated successfully',
+      data:    updated
+    });
+
+  } catch (err) {
+    // Clean up temp file if an error occurred after multer saved it
+    // but before we deleted it in step 3
+    if (tempFilePath) {
+      try {
+        if (fs.existsSync(tempFilePath)) fs.unlinkSync(tempFilePath);
+      } catch {
+        console.warn(`Failed to delete temp file on error: ${tempFilePath}`);
+      }
+    }
+
+    console.error('updateOrgProfile error:', err);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
