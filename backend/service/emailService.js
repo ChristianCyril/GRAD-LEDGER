@@ -202,3 +202,49 @@ export const sendOrgDisabledEmail = async (toEmail, orgName) => {
     `
   });
 };
+
+export const sendAdminCreatedEmail = async (toEmail, adminName, orgName, tempPassword) => {
+  await transporter.sendMail({
+    from:    process.env.MAIL_FROM,
+    to:      toEmail,
+    subject: `Your Admin Account — ${orgName} on CertChain`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <body style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; padding: 24px;">
+          <h2 style="color: #1a1a1a;">Welcome to CertChain, ${adminName}</h2>
+          <p>An admin account has been created for you under <strong>${orgName}</strong> on CertChain.</p>
+
+          <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; margin: 24px 0;">
+            <p style="margin: 0 0 8px 0;"><strong>Login email:</strong> ${toEmail}</p>
+            <p style="margin: 0;"><strong>Temporary password:</strong> ${tempPassword}</p>
+          </div>
+
+          <p>For security, please change your password immediately after your first login.</p>
+
+          <div style="margin: 24px 0;">
+            
+              href="${process.env.CLIENT_URL}/org/login"
+              style="
+                background-color: #2563eb;
+                color: #ffffff;
+                padding: 12px 24px;
+                text-decoration: none;
+                border-radius: 6px;
+                font-weight: bold;
+                display: inline-block;
+              "
+            >
+              Log In to CertChain
+            </a>
+          </div>
+
+          <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />
+          <p style="font-size: 12px; color: #999;">
+            If you were not expecting this email, please contact your organisation administrator immediately.
+          </p>
+        </body>
+      </html>
+    `
+  });
+};
