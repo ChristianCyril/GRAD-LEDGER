@@ -1,27 +1,34 @@
-import request from 'supertest';
-import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcrypt';
 import dotenv from 'dotenv';
-import { getPrismaClient } from '../prisma.singleton.js';
-
-// Load environment variables for tests
 dotenv.config({ path: '.env.test' });
 
-const prisma = getPrismaClient();
+import { jest } from '@jest/globals';
 
-// create a simple express app for testing
-import express from 'express';
-import cors from 'cors';
-import cookieParser from 'cookie-parser';
-import superAdminRoutes from '../../routes/superAdminRoutes.js';
-import corsOption from '../../config/corsOption.js';
-import { signAccessToken } from '../../service/jwtServices.js';
+// Mock FIRST, before any dynamic imports
+ jest.unstable_mockModule('../../service/emailService.js', () => ({
+  sendOrgApprovedEmail: jest.fn().mockResolvedValue(undefined),
+  sendOrgRejectedEmail: jest.fn().mockResolvedValue(undefined),
+  sendOrgDisabledEmail: jest.fn().mockResolvedValue(undefined),
+}));
+
+// Dynamic imports AFTER the mock
+const { default: request } = await import('supertest');
+const { default: bcrypt } = await import('bcrypt');
+const { getPrismaClient } = await import('../prisma.singleton.js');
+const { default: express } = await import('express');
+const { default: cors } = await import('cors');
+const { default: cookieParser } = await import('cookie-parser');
+const { default: superAdminRoutes } = await import('../../routes/superAdminRoutes.js');
+const { default: corsOption } = await import('../../config/corsOption.js');
+const { signAccessToken } = await import('../../service/jwtServices.js');
+
+const prisma = getPrismaClient();
 
 const app = express();
 app.use(cors(corsOption));
 app.use(express.json());
 app.use(cookieParser());
 app.use('/api/super-admin', superAdminRoutes);
+
 
 describe('Super Admin Integration Tests', () => {
   let superAdminId;
