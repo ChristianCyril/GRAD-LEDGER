@@ -4,5 +4,6 @@ export default {
     '^(\\.{1,2}/.*)\\.js$': '$1',
   },
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+  globalTeardown: '<rootDir>/jest.globalTeardown.js',
   transform: {},
 };

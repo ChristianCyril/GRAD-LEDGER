@@ -1,12 +1,9 @@
 import { PrismaClient } from '@prisma/client';
+import { getPrismaClient } from '../prisma.singleton.js';
 
-const prisma = new PrismaClient();
+const prisma = getPrismaClient();
 
 describe('Database Unit Tests', () => {
-  afterAll(async () => {
-    await prisma.$disconnect();
-  });
-
   describe('prisma.superAdmin.findMany()', () => {
     it('should resolve without throwing', async () => {
       const result = await prisma.superAdmin.findMany();

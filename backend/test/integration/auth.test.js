@@ -2,11 +2,12 @@ import request from 'supertest';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import dotenv from 'dotenv';
+import { getPrismaClient } from '../prisma.singleton.js';
 
 // Load environment variables for tests
 dotenv.config({ path: '.env.test' });
 
-const prisma = new PrismaClient();
+const prisma = getPrismaClient();
 
 // create a simple express app for testing or import the actual app
 import express from 'express';
@@ -119,8 +120,6 @@ describe('Auth Integration Tests', () => {
         where: { id: superAdminId }
       }).catch(() => {});
     }
-
-    await prisma.$disconnect();
   });
 
   describe('POST /api/auth/super-admin/login', () => {

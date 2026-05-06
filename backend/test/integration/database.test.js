@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
+import { getPrismaClient } from '../prisma.singleton.js';
 
-const prisma = new PrismaClient();
+const prisma = getPrismaClient();
 
 describe('Database Integration Tests', () => {
   let seededOrg;
@@ -33,10 +34,6 @@ describe('Database Integration Tests', () => {
         where: { id: seededOrg.id }
       });
     }
-  });
-
-  afterAll(async () => {
-    await prisma.$disconnect();
   });
 
   describe('Query by official_email', () => {

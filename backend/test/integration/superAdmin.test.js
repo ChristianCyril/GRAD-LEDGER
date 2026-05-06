@@ -2,11 +2,12 @@ import request from 'supertest';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import dotenv from 'dotenv';
+import { getPrismaClient } from '../prisma.singleton.js';
 
 // Load environment variables for tests
 dotenv.config({ path: '.env.test' });
 
-const prisma = new PrismaClient();
+const prisma = getPrismaClient();
 
 // create a simple express app for testing
 import express from 'express';
@@ -37,7 +38,7 @@ describe('Super Admin Integration Tests', () => {
     // Seed a super admin
     const superAdmin = await prisma.superAdmin.create({
       data: {
-        email: 'superadmin.test@example.com',
+        email: 'superadmin.superadmintest@example.com',
         password_hash: await bcrypt.hash('SuperAdmin@123', 10)
       }
     });
@@ -55,11 +56,11 @@ describe('Super Admin Integration Tests', () => {
     const approvedOrg = await prisma.organisation.create({
       data: {
         name: 'Approved University',
-        code: 'APPROVED-UNI',
+        code: 'APPROVED-UNI-' + Date.now(),
         type: 'UNIVERSITY',
         country: 'Cameroon',
         city: 'Yaoundé',
-        official_email: 'approved.org@example.com',
+        official_email: 'approved.org.superadmintest@example.com',
         phone: '+237111111111',
         address: 'Approved Address',
         status: 'APPROVED'
@@ -74,7 +75,7 @@ describe('Super Admin Integration Tests', () => {
         role: 'ORG_SUPER_ADMIN',
         full_name: 'Approved Org Super Admin',
         job_title: 'Registrar',
-        email: 'approved.superadmin@example.com',
+        email: 'approved.superadmin.superadmintest@example.com',
         phone: '+237222222222',
         password_hash: await bcrypt.hash('ApprovedSuper@123', 10),
         status: 'ACTIVE'
@@ -89,7 +90,7 @@ describe('Super Admin Integration Tests', () => {
         role: 'ORG_ADMIN',
         full_name: 'Approved Org Admin',
         job_title: 'Deputy Registrar',
-        email: 'approved.admin@example.com',
+        email: 'approved.admin.superadmintest@example.com',
         phone: '+237333333333',
         password_hash: await bcrypt.hash('ApprovedAdmin@123', 10),
         status: 'ACTIVE'
@@ -112,11 +113,11 @@ describe('Super Admin Integration Tests', () => {
     const pendingOrg = await prisma.organisation.create({
       data: {
         name: 'Pending University',
-        code: 'PENDING-UNI',
+        code: 'PENDING-UNI-' + Date.now(),
         type: 'UNIVERSITY',
         country: 'Cameroon',
         city: 'Douala',
-        official_email: 'pending.org@example.com',
+        official_email: 'pending.org.superadmintest' + Date.now() + '@example.com',
         phone: '+237444444444',
         address: 'Pending Address',
         status: 'PENDING'
@@ -131,7 +132,7 @@ describe('Super Admin Integration Tests', () => {
         role: 'ORG_SUPER_ADMIN',
         full_name: 'Pending Org Super Admin',
         job_title: 'Manager',
-        email: 'pending.superadmin@example.com',
+        email: 'pending.superadmin.superadmintest' + Date.now() + '@example.com',
         phone: '+237555555555',
         password_hash: await bcrypt.hash('PendingSuper@123', 10),
         status: 'ACTIVE'
@@ -192,8 +193,6 @@ describe('Super Admin Integration Tests', () => {
         where: { id: superAdminId }
       }).catch(() => {});
     }
-
-    await prisma.$disconnect();
   });
 
   describe('GET /api/super-admin/organisations/pending', () => {
