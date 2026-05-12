@@ -80,7 +80,7 @@ export default function Header({ pageTitle, onMenuClick }) {
 
         <div className="header__logo">
           <span className="header__logo-mark">⬡</span>
-          <span className="header__logo-text">CertChain</span>
+          <span className="header__logo-text">Block-Ledger</span>
         </div>
 
         {pageTitle && (

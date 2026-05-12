@@ -213,7 +213,7 @@ export default function OrgLogin() {
 
           <p className="form-card__footer">
             Not registered yet?{' '}
-            <Link to="/register">Register your organisation</Link>
+            <Link to="/org-registration">Register your organisation</Link>
           </p>
         </div>
       </div>

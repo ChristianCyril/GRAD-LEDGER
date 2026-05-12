@@ -9,6 +9,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import HomePage from "./pages/HomePage";
 import SuperAdminLogin from "./pages/superAdmin/SuperAdminLogin";
 import SuperAdminDashboard from "./pages/superAdmin/SuperAdminDashboard";
+import OrgRegister from "./pages/org/orgSuperAdmin/OrgRegister";
 
 export default function App() {
   return (
@@ -18,6 +19,7 @@ export default function App() {
       <Route path='/super-admin-login' element={<SuperAdminLogin />} />
       <Route path='/forgot-password' element={<ForgotPassword />} />
       <Route path='/reset-password' element={<ResetPassword />} />
+      <Route path='/org-registration' element={<OrgRegister/>} />
 
       <Route element={<PersistLogin />}>
         <Route element={<ProtectedRoute roles={['ORG_SUPER_ADMIN']} />}>
