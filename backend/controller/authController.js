@@ -1,4 +1,5 @@
 import bcrypt from 'bcrypt'
+import crypto from 'crypto';
 import prisma from "../config/prisma.js";
 import { signAccessToken, signRefreshToken,verifyRefreshToken, } from "../service/jwtServices.js";
 import { sendPasswordResetEmail } from "../service/emailService.js";
@@ -211,7 +212,6 @@ export const refreshAccessToken = async (req, res) => {
       });
     }
 
-    // Get all stored tokens for that user
     const storedTokens = await prisma.refreshToken.findMany({
       where: {
         user_id: decoded.userId,
@@ -226,7 +226,6 @@ export const refreshAccessToken = async (req, res) => {
       });
     }
 
-    // Match provided token against hashed DB values
     let matchedToken = null;
 
     for (const tokenRecord of storedTokens) {
@@ -255,7 +254,6 @@ export const refreshAccessToken = async (req, res) => {
       });
     }
 
-    // Rotate refresh token
     const newPayload = {
       userId: decoded.userId,
       role: decoded.role,
@@ -275,6 +273,55 @@ export const refreshAccessToken = async (req, res) => {
       },
     });
 
+    // Fetch user based on role
+    let user;
+
+    if (decoded.role === "SUPER_ADMIN") {
+      const superAdmin = await prisma.superAdmin.findUnique({
+        where: { id: decoded.userId },
+        select: {
+          id: true,
+          email: true,
+        },
+      });
+
+      user = {
+        id: superAdmin.id,
+        email: superAdmin.email,
+        role: "SUPER_ADMIN",
+      };
+
+    } else {
+      const orgUser = await prisma.orgUser.findUnique({
+        where: { id: decoded.userId },
+        select: {
+          id: true,
+          full_name: true,
+          email: true,
+          role: true,
+          org_id: true,
+          organisation: {
+            select: {
+              name: true,
+              code: true,
+            },
+          },
+        },
+      });
+
+      user = {
+        id: orgUser.id,
+        full_name: orgUser.full_name,
+        email: orgUser.email,
+        role: orgUser.role,
+        org_id: orgUser.org_id,
+        organisation: {
+          name: orgUser.organisation.name,
+          code: orgUser.organisation.code,
+        },
+      };
+    }
+
     res.cookie("refreshToken", newRefreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -287,8 +334,10 @@ export const refreshAccessToken = async (req, res) => {
       message: "Access token refreshed",
       data: {
         accessToken: newAccessToken,
+        user,
       },
     });
+
   } catch (error) {
     console.error("refreshAccessToken error:", error);
 

@@ -41,7 +41,7 @@ async function main() {
       job_title:     'Registrar',
       email:         'registrar@uy1.cm',
       phone:         '+237677000002',
-      password_hash: await bcrypt.hash('OrgSuper@123', 10),
+      password_hash: await bcrypt.hash('OrgSuper@1234', 10),
       status:        'ACTIVE'
     }
   });
