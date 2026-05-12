@@ -1,0 +1,281 @@
+/* ─── Header shell ───────────────────────────────────── */
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  height: var(--topbar-height);
+  background: var(--surface-card);
+  border-bottom: 0.5px solid var(--border-default);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-xl);
+  gap: var(--space-base);
+}
+
+
+/* ─── Left side ──────────────────────────────────────── */
+
+.header__left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-base);
+  min-width: 0;
+}
+
+/* Hamburger — visible only below 768px */
+.header__menu-btn {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  width: 32px;
+  height: 32px;
+  background: none;
+  border: none;
+  padding: 4px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background var(--transition-fast);
+}
+
+.header__menu-btn:hover {
+  background: var(--surface-subtle);
+}
+
+.hamburger-line {
+  display: block;
+  width: 18px;
+  height: 1.5px;
+  background: var(--text-secondary);
+  border-radius: 2px;
+  transition: background var(--transition-fast);
+}
+
+/* Logo */
+.header__logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-shrink: 0;
+  text-decoration: none;
+}
+
+.header__logo-mark {
+  font-size: 20px;
+  color: var(--color-primary);
+  line-height: 1;
+}
+
+.header__logo-text {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+/* Divider between logo and page title */
+.header__divider {
+  width: 1px;
+  height: 18px;
+  background: var(--border-default);
+  flex-shrink: 0;
+}
+
+/* Page title */
+.header__page-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+/* ─── Right side ─────────────────────────────────────── */
+
+.header__right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  flex-shrink: 0;
+}
+
+
+/* ─── Role badge ─────────────────────────────────────── */
+
+.role-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.role--teal {
+  background: var(--teal-50);
+  color: var(--teal-800);
+}
+
+.role--blue {
+  background: var(--blue-50);
+  color: var(--blue-800);
+}
+
+.role--amber {
+  background: var(--amber-50);
+  color: var(--amber-800);
+}
+
+.role--gray {
+  background: var(--gray-50);
+  color: var(--gray-800);
+}
+
+
+/* ─── Avatar button ──────────────────────────────────── */
+
+.header__user {
+  position: relative;
+}
+
+.header__avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-full);
+  background: var(--teal-50);
+  color: var(--teal-800);
+  border: 1.5px solid var(--teal-100);
+  font-size: 12px;
+  font-weight: 500;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.header__avatar:hover {
+  background: var(--teal-100);
+  border-color: var(--teal-200);
+}
+
+
+/* ─── Dropdown ───────────────────────────────────────── */
+
+.header__dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 220px;
+  background: var(--surface-card);
+  border: 0.5px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  animation: dropdown-in var(--transition-fast) ease;
+  z-index: 200;
+}
+
+@keyframes dropdown-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdown__profile {
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dropdown__name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dropdown__email {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dropdown__divider {
+  height: 0.5px;
+  background: var(--border-default);
+  margin: 0;
+}
+
+.dropdown__item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 10px 14px;
+  background: none;
+  border: none;
+  font-size: 13px;
+  font-family: var(--font-sans);
+  color: var(--text-secondary);
+  cursor: pointer;
+  text-align: left;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.dropdown__item:hover {
+  background: var(--surface-subtle);
+  color: var(--text-primary);
+}
+
+.dropdown__item--danger {
+  color: var(--red-400);
+}
+
+.dropdown__item--danger:hover {
+  background: var(--red-50);
+  color: var(--red-800);
+}
+
+
+/* ─── Responsive ─────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .header {
+    padding: 0 var(--space-base);
+  }
+
+  .header__menu-btn {
+    display: flex;
+  }
+
+  /* Hide page title on small screens — sidebar handles navigation context */
+  .header__divider,
+  .header__page-title {
+    display: none;
+  }
+
+  /* Hide role badge text, keep small dot indicator instead */
+  .role-badge {
+    display: none;
+  }
+}
