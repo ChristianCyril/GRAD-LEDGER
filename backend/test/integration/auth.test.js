@@ -286,7 +286,7 @@ describe('Auth Integration Tests', () => {
 
       // Then refresh
       const refreshResponse = await request(app)
-        .post('/api/auth/refresh')
+        .get('/api/auth/refresh')
         .set('Cookie', cookies);
 
       expect(refreshResponse.status).toBe(200);
@@ -309,7 +309,7 @@ describe('Auth Integration Tests', () => {
 
       // Refresh
       const refreshResponse = await request(app)
-        .post('/api/auth/refresh')
+        .get('/api/auth/refresh')
         .set('Cookie', cookies);
 
       expect(refreshResponse.status).toBe(200);
@@ -324,7 +324,7 @@ describe('Auth Integration Tests', () => {
 
     it('should return 401 with no cookie', async () => {
       const response = await request(app)
-        .post('/api/auth/refresh');
+        .get('/api/auth/refresh');
 
       expect(response.status).toBe(401);
       expect(response.body.message).toContain('missing');
@@ -345,7 +345,7 @@ describe('Auth Integration Tests', () => {
 
       // Logout
       const logoutResponse = await request(app)
-        .post('/api/auth/logout')
+        .get('/api/auth/logout')
         .set('Cookie', cookies);
 
       expect(logoutResponse.status).toBe(200);
