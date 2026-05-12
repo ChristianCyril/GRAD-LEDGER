@@ -30,8 +30,8 @@ const useApiPrivate = () => {
         if (error?.response?.status === 401 && !originalRequest?._retry) { //_retry currently undefined since it has not been set
           originalRequest._retry = true
           try {
-            const response = await api.get('/api/auth/refresh')
-            const newAccessToken = response.data.accessToken
+            const {data} = await api.get('/api/auth/refresh')
+            const newAccessToken = data.data.accessToken
             setAuth((prev) => ({ ...prev, accessToken: newAccessToken }));
             originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
             return apiPrivate(originalRequest);
