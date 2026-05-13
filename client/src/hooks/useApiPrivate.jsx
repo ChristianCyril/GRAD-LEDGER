@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { apiPrivate,api } from "../api/axios";
-import useAuth from "./useAuth";
+import {useAuth} from "../hooks/useAuth";
 //import { useNavigate } from "react-router-dom";
 
 const useApiPrivate = () => {
