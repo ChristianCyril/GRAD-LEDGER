@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth'; 
 import SuperAdminSidebar from '../../components/SuperAdminSidebar';
 import useApiPrivate from '../../hooks/useApiPrivate';
 import './SuperAdminDashboard.css';
@@ -53,7 +52,7 @@ function OrgRow({ org, onAction }) {
       {org.status === 'PENDING' && (
         <button
           className="org-row__review"
-          onClick={() => onAction(org.id)}
+          onClick={() => onAction()}
           aria-label={`Review ${org.name}`}
         >
           Review →
@@ -285,7 +284,7 @@ export default function SuperAdminDashboard() {
                     <OrgRow
                       key={org.id}
                       org={org}
-                      onAction={(id) => navigate(`/super-admin/organisations/${id}`)}
+                      onAction={() => navigate('/super-admin/organisations/pending')}
                     />
                   ))}
                 </div>

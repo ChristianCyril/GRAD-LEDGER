@@ -121,7 +121,8 @@ export default function SuperAdminSidebar({ open, onClose, pendingCount = 0 }) {
                   <li key={item.to}>
                     <NavLink
                       to={item.to}
-                      end={item.to === '/super-admin/dashboard'}
+                      end={item.to === '/super-admin/dashboard' ||
+                        item.to === '/super-admin/organisations'}
                       className={({ isActive }) =>
                         `sa-nav-item ${isActive ? 'sa-nav-item--active' : ''}`
                       }

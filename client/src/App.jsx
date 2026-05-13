@@ -10,6 +10,7 @@ import HomePage from "./pages/HomePage";
 import SuperAdminLogin from "./pages/superAdmin/SuperAdminLogin";
 import SuperAdminDashboard from "./pages/superAdmin/SuperAdminDashboard";
 import OrgRegister from "./pages/org/orgSuperAdmin/OrgRegister";
+import PendingOrganisations from "./pages/superAdmin/PendingOrganisations";
 
 export default function App() {
   return (
@@ -35,6 +36,7 @@ export default function App() {
 
         <Route element={<ProtectedRoute roles={['SUPER_ADMIN']} />}>
           <Route path='/super-admin/dashboard' element={<SuperAdminDashboard />}/>
+          <Route path='/super-admin/organisations/pending' element={<PendingOrganisations />}/>
         </Route>
       </Route>
     </Routes>
