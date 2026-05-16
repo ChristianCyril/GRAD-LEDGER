@@ -225,7 +225,7 @@ export const registerOrganisation = async (req, res) => {
 //update organisation profile
 export const updateOrgProfile = async (req, res) => {
   let tempFilePath = null;
-
+  if (!req.user.orgId) return res.statusCode(401)
   try {
     const orgId = req.user.orgId;
     const {
@@ -344,6 +344,51 @@ export const updateOrgProfile = async (req, res) => {
     }
 
     console.error('updateOrgProfile error:', err);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+export const getOrgProfile = async (req, res) => {
+  if (!req.user.orgId) return res.statusCode(401)
+  try {
+    const organisation = await prisma.organisation.findUnique({
+      where:  { id: req.user.orgId },
+      select: {
+        id:             true,
+        name:           true,
+        code:           true,
+        type:           true,
+        country:        true,
+        city:           true,
+        website:        true,
+        logo_url:       true,
+        official_email: true,
+        phone:          true,
+        address:        true,
+        status:         true,
+        created_at:     true,
+        updated_at:     true,
+        // Include the Org Super Admin's details
+        users: {
+          where:  { role: 'ORG_SUPER_ADMIN' },
+          select: {
+            full_name: true,
+            job_title: true,
+            email:     true,
+            phone:     true
+          }
+        }
+      }
+    });
+
+    if (!organisation) {
+      return res.status(404).json({ message: 'Organisation not found' });
+    }
+
+    return res.status(200).json({ data: organisation });
+
+  } catch (err) {
+    console.error('getOrgProfile error:', err);
     return res.status(500).json({ message: 'Internal server error' });
   }
 };
