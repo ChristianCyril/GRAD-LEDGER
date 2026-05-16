@@ -1,4 +1,4 @@
-import { NavLink} from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import './SuperAdminSidebar.css';
 
@@ -44,6 +44,16 @@ const NAV_ITEMS = [
           </svg>
         ),
       },
+      {
+        to: '/super-admin/organisations/rejected',
+        label: 'Rejected organisations',
+        icon: (
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M2 13V6l6-4 6 4v7" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+            <path d="M6 7.5l4 4M10 7.5l-4 4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+          </svg>
+        ),
+      },
     ],
   },
   {
@@ -65,11 +75,11 @@ const NAV_ITEMS = [
 export default function SuperAdminSidebar({ open, onClose, pendingCount = 0 }) {
   const { auth, logout } = useAuth();
   const user = auth.user;
- 
+
 
   async function handleLogout() {
     await logout();
-    
+
   }
 
   return (
