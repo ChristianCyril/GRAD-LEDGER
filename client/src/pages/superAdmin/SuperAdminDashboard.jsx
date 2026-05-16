@@ -52,7 +52,7 @@ function OrgRow({ org, onAction }) {
       {org.status === 'PENDING' && (
         <button
           className="org-row__review"
-          onClick={() => onAction()}
+          onClick={() => onAction(org.id)}
           aria-label={`Review ${org.name}`}
         >
           Review →
@@ -284,7 +284,7 @@ export default function SuperAdminDashboard() {
                     <OrgRow
                       key={org.id}
                       org={org}
-                      onAction={() => navigate('/super-admin/organisations/pending')}
+                      onAction={(id) => navigate('/super-admin/organisations/pending', { state: { selectedId: id } })}
                     />
                   ))}
                 </div>
