@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate,useLocation } from 'react-router-dom';
 import SuperAdminSidebar from '../../components/SuperAdminSidebar';
 import useApiPrivate from '../../hooks/useApiPrivate';
 import './PendingOrganisations.css';
@@ -191,6 +191,8 @@ export default function PendingOrganisations() {
   const navigate = useNavigate();
   const api = useApiPrivate();
   const initialFetch = useRef(true);
+  const location = useLocation();
+  const preSelectedId = location.state?.selectedId;
   
   const [sidebarOpen,   setSidebarOpen]   = useState(false);
   const [orgs,          setOrgs]          = useState([]);
@@ -210,11 +212,11 @@ export default function PendingOrganisations() {
       const { data } = await api.get('/api/super-admin/organisations/pending');
       setOrgs(data.data ?? []);
       // Auto-select first on desktop
-      if (data.data?.length > 0) {
-        setSelected(data.data[0]);
-      } else {
-        setSelected(null);
-      }
+      const target = preSelectedId
+        ? data.data.find((o) => o.id === preSelectedId)
+        : data.data[0];
+
+      if (target) setSelected(target);
     } catch {
       setError('Failed to load pending organisations. Please refresh.');
     } finally {
