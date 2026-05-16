@@ -4,10 +4,6 @@ import { useAuth } from '../hooks/useAuth'
 import './Header.css';
 
 const ROLE_CONFIG = {
-  SUPER_ADMIN: {
-    label: 'Super Admin',
-    colorClass: 'role--teal',
-  },
   ORG_SUPER_ADMIN: {
     label: 'Org Super Admin',
     colorClass: 'role--blue',
@@ -35,7 +31,7 @@ export default function Header({ pageTitle, onMenuClick }) {
   const dropdownRef = useRef(null);
 
   const role = ROLE_CONFIG[user?.role] ?? { label: user?.role, colorClass: 'role--gray' };
-  const initials = user?.role === 'SUPER_ADMIN' ? 'SA' : getInitials(user?.full_name);
+  const initials = getInitials(user?.full_name);
 
   // Close dropdown when clicking outside
   useEffect(() => {

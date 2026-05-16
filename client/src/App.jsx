@@ -11,6 +11,9 @@ import SuperAdminLogin from "./pages/superAdmin/SuperAdminLogin";
 import SuperAdminDashboard from "./pages/superAdmin/SuperAdminDashboard";
 import OrgRegister from "./pages/org/orgSuperAdmin/OrgRegister";
 import PendingOrganisations from "./pages/superAdmin/PendingOrganisations";
+import AllOrganisations from "./pages/superAdmin/AllOrganisations";
+import ViewOrganisation from "./pages/superAdmin/ViewOrganisation";
+import RejectedOrganisations from "./pages/superAdmin/RejectedOrganisations";
 
 export default function App() {
   return (
@@ -37,6 +40,9 @@ export default function App() {
         <Route element={<ProtectedRoute roles={['SUPER_ADMIN']} />}>
           <Route path='/super-admin/dashboard' element={<SuperAdminDashboard />}/>
           <Route path='/super-admin/organisations/pending' element={<PendingOrganisations />}/>
+          <Route path='/super-admin/organisations' element={<AllOrganisations/>}/>
+          <Route path='/super-admin/organisations/rejected' element={<RejectedOrganisations/>}/>
+          <Route path='/super-admin/organisations/:id' element={<ViewOrganisation/>}/>
         </Route>
       </Route>
     </Routes>
