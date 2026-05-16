@@ -260,7 +260,7 @@ describe('Super Admin Integration Tests', () => {
         .set('Authorization', `Bearer ${superAdminToken}`);
 
       expect(response.status).toBe(400);
-      expect(response.body.message).toContain('Only pending organisations can be approved');
+      expect(response.body.message).toContain('Only pending or rejected organisations can be approved.');
     });
   });
 

@@ -266,19 +266,6 @@ describe('approveOrganisation — unit tests', () => {
     expect(mockUpdate).not.toHaveBeenCalled();
   });
 
-  it('returns 400 when the organisation is REJECTED (only PENDING can be approved)', async () => {
-    mockFindUnique.mockResolvedValueOnce({
-      id: 'org-id', name: 'Test Uni', status: 'REJECTED', users: []
-    });
-
-    const req = { params: { id: 'org-id' } };
-    const res = buildRes();
-
-    await approveOrganisation(req, res);
-
-    expect(res.status).toHaveBeenCalledWith(400);
-    expect(mockUpdate).not.toHaveBeenCalled();
-  });
 
   it('returns 404 when organisation does not exist', async () => {
     mockFindUnique.mockResolvedValueOnce(null);

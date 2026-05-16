@@ -161,9 +161,11 @@ export const approveOrganisation = async (req, res) => {
       return res.status(404).json({ message: 'Organisation not found' });
     }
 
-    if (organisation.status !== 'PENDING') {
+    const allowedStatuses = ['PENDING', 'REJECTED'];
+
+    if (!allowedStatuses.includes(organisation.status)) {
       return res.status(400).json({
-        message: `Only pending organisations can be approved. Current status: ${organisation.status}`
+        message: `Only pending or rejected organisations can be approved. Current status: ${organisation.status}`
       });
     }
 
