@@ -14,6 +14,8 @@ import PendingOrganisations from "./pages/superAdmin/PendingOrganisations";
 import AllOrganisations from "./pages/superAdmin/AllOrganisations";
 import ViewOrganisation from "./pages/superAdmin/ViewOrganisation";
 import RejectedOrganisations from "./pages/superAdmin/RejectedOrganisations";
+import ManageAdmins from "./pages/org/orgSuperAdmin/ManageAdmins";
+import OrgProfile from "./pages/org/orgSuperAdmin/OrgProfile";
 
 export default function App() {
   return (
@@ -28,6 +30,8 @@ export default function App() {
       <Route element={<PersistLogin />}>
         <Route element={<ProtectedRoute roles={['ORG_SUPER_ADMIN']} />}>
           <Route path='/org-super-admin/dashboard' element={<DashboardOrgSuper />} />
+          <Route path='/org-super-admin/manage-admins' element={<ManageAdmins />} />
+          <Route path='/org-super-admin/org-profile' element={<OrgProfile />} />
         </Route>
 
         <Route element={<ProtectedRoute roles={['ORG_ADMIN']} />}>
