@@ -11,7 +11,9 @@ router.post('/register', upload.fields([
   { name: 'doc_letter_of_intent', maxCount: 1 },
   { name: 'doc_accreditation', maxCount: 1 }
 ]), registerOrganisation)
-router.patch('/profile',authenticate,authorise('ORG_SUPER_ADMIN'),updateOrgProfile)
+
+router.patch('/profile',authenticate,authorise('ORG_SUPER_ADMIN'),upload.single('logo'),updateOrgProfile)
+
 router.get('/profile',authenticate,authorise('ORG_SUPER_ADMIN'),getOrgProfile)
 
 export default router

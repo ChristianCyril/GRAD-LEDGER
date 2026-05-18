@@ -6,7 +6,7 @@ import corsOption from './config/corsOption.js'
 import authRoutes from './routes/authRoutes.js'
 import orgRoutes from './routes/orgRoutes.js'
 import superAdminRoutes from './routes/superAdminRoutes.js'
-import orgSuperAdminRoutes from './routes/superAdminRoutes.js'
+import orgSuperAdminRoutes from './routes/orgSuperAdminRoutes.js'
 
 
 const app = express();
