@@ -7,7 +7,7 @@ const NAV_ITEMS = [
     group: 'Overview',
     items: [
       {
-        to: '/org/dashboard',
+        to: '/org-super-admin/dashboard',
         label: 'Dashboard',
         icon: (
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -49,7 +49,7 @@ const NAV_ITEMS = [
     group: 'Administration',
     items: [
       {
-        to: '/org/admins',
+        to: '/org-super-admin/manage-admins',
         label: 'Manage admins',
         icon: (
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -75,7 +75,7 @@ const NAV_ITEMS = [
     group: 'Organisation',
     items: [
       {
-        to: '/org/profile',
+        to: '/org-super-admin/org-profile',
         label: 'Profile & settings',
         icon: (
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -107,7 +107,8 @@ function getInitials(name = '') {
 }
 
 export default function OrgSuperAdminSidebar({ open, onClose, org }) {
-  const { user, logout } = useAuth();
+  const { auth, logout } = useAuth();
+  const user = auth.user
   const navigate = useNavigate();
 
   async function handleLogout() {
