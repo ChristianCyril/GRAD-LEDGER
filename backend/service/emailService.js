@@ -248,3 +248,127 @@ export const sendAdminCreatedEmail = async (toEmail, adminName, orgName, tempPas
     `
   });
 };
+
+export const sendCertificateIssuedEmail = async (
+  toEmail, studentName, certId, cloudinaryUrl, qrCodeDataUrl
+) => {
+  await transporter.sendMail({
+    from:    process.env.MAIL_FROM,
+    to:      toEmail,
+    subject: 'Your Certificate is Ready Grad-Ledger',
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <body style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; padding: 24px;">
+          <h2 style="color: #16a34a;">Your Certificate is Ready</h2>
+          <p>Dear <strong>${studentName}</strong>,</p>
+          <p>Your certificate has been issued successfully.</p>
+
+          <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; margin: 24px 0;">
+            <p style="margin: 0 0 8px 0;"><strong>Verification Code:</strong></p>
+            <p style="margin: 0; font-family: monospace; font-size: 14px; word-break: break-all;">${certId}</p>
+          </div>
+
+          <p>Use this code to verify your certificate at any time:</p>
+          <div style="margin: 16px 0;">
+            
+              href="${process.env.CLIENT_URL}/verify/${certId}"
+              style="
+                background-color: #2563eb;
+                color: #ffffff;
+                padding: 12px 24px;
+                text-decoration: none;
+                border-radius: 6px;
+                font-weight: bold;
+                display: inline-block;
+              "
+            >
+              Verify Certificate
+            </a>
+          </div>
+
+          <p style="margin-top: 24px;">
+            <a href="${cloudinaryUrl}">Download your certificate PDF</a>
+          </p>
+
+          <p style="font-size: 12px; color: #999; margin-top: 8px;">
+            The QR code attached to this email also links directly to your verification page.
+          </p>
+
+          <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />
+          <p style="font-size: 12px; color: #999;">
+            Keep this email safe. Your verification code and QR code are the proof of your credential.
+          </p>
+        </body>
+      </html>
+    `,
+    attachments: [{
+      filename:    'qrcode.png',
+      content:     Buffer.from(qrCodeDataUrl.split(',')[1], 'base64'),
+      contentType: 'image/png'
+    }]
+  });
+};
+
+export const sendRevocationEmail = async (toEmail, studentName, orgName) => {
+  await transporter.sendMail({
+    from:    process.env.MAIL_FROM,
+    to:      toEmail,
+    subject: 'Certificate Revocation Notice — CertChain',
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <body style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; padding: 24px;">
+
+          <h2 style="color: #dc2626;">Certificate Revocation Notice</h2>
+
+          <p>Dear <strong>${studentName}</strong>,</p>
+
+          <p>
+            We are writing to inform you that a certificate previously issued to you by
+            <strong>${orgName}</strong> on the CertChain platform has been revoked.
+          </p>
+
+          <div style="
+            background-color: #fef2f2;
+            border:           1px solid #fecaca;
+            border-left:      4px solid #dc2626;
+            border-radius:    8px;
+            padding:          16px;
+            margin:           24px 0;
+          ">
+            <p style="margin: 0; font-weight: bold; color: #dc2626;">
+              ⚠ This certificate is no longer valid
+            </p>
+            <p style="margin: 8px 0 0 0; font-size: 14px;">
+              Any verification attempt on this certificate will now return a
+              <strong>Revoked</strong> status.
+            </p>
+          </div>
+
+          <p>
+            If you believe this revocation was made in error or you would like
+            more information about the reason, please contact
+            <strong>${orgName}</strong> directly.
+          </p>
+
+          <p>
+            You can also reach the CertChain support team at
+            <a href="mailto:${process.env.SUPER_ADMIN_EMAIL}">
+              ${process.env.SUPER_ADMIN_EMAIL}
+            </a>
+            if you need further assistance.
+          </p>
+
+          <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />
+
+          <p style="font-size: 12px; color: #999;">
+            This is an automated notification from CertChain. Please do not reply
+            to this email directly.
+          </p>
+
+        </body>
+      </html>
+    `
+  });
+};
