@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, memo } from 'react';
 import useApiPrivate from '../../../hooks/useApiPrivate';
 import { useAuth } from '../../../hooks/useAuth';
 import Header from '../../../components/Header';
@@ -42,7 +42,7 @@ function StatusBadge({ status }) {
 /* ─── Email status dot ───────────────────────────────── */
 
 function EmailDot({ status }) {
-  const map = { SENT: 'sent', FAILED: 'failed', PENDING: 'pending' };
+  const map   = { SENT: 'sent', FAILED: 'failed', PENDING: 'pending' };
   const label = { SENT: 'Email sent', FAILED: 'Email failed', PENDING: 'Email pending' };
   return (
     <span
@@ -151,6 +151,82 @@ function Spinner({ size = 14, light = false }) {
   );
 }
 
+/* ─── Revoke modal ───────────────────────────────────────
+   Completely self-contained: owns its own reason + error
+   state so parent re-renders never touch the textarea.
+────────────────────────────────────────────────────────── */
+
+const RevokeModal = memo(function RevokeModal({ onCancel, onConfirm }) {
+  const [reason,  setReason]  = useState('');
+  const [err,     setErr]     = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleConfirm = async () => {
+    if (!reason.trim()) { setErr('Reason is required'); return; }
+    setLoading(true);
+    // bubble result up — parent handles API call + toast + state cleanup
+    const error = await onConfirm(reason);
+    if (error) {
+      setErr(error);
+      setLoading(false);
+    }
+    // if no error, parent will unmount this modal — no need to reset
+  };
+
+  return (
+    <div
+      className="cl-modal-backdrop"
+      onClick={() => { if (!loading) onCancel(); }}
+    >
+      <div
+        className="cl-modal"
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Revoke certificate"
+      >
+        <h3 className="cl-modal__title">Revoke certificate</h3>
+        <p className="cl-modal__sub">
+          This action is permanent and cannot be undone. The student will be notified by email.
+        </p>
+        <div className="cl-modal__field">
+          <label className="label cl-modal__label" htmlFor="revoke-reason">
+            Reason for revocation
+          </label>
+          <textarea
+            id="revoke-reason"
+            className={`cl-modal__textarea ${err ? 'cl-modal__textarea--error' : ''}`}
+            rows={3}
+            placeholder="e.g. Certificate issued in error, academic misconduct…"
+            value={reason}
+            onChange={(e) => { setReason(e.target.value); setErr(''); }}
+            disabled={loading}
+          />
+          {err && <span className="cl-modal__err">{err}</span>}
+        </div>
+        <div className="cl-modal__footer">
+          <button
+            className="cl-btn cl-btn--ghost"
+            onClick={onCancel}
+            disabled={loading}
+          >
+            Cancel
+          </button>
+          <button
+            className="cl-btn cl-btn--danger"
+            onClick={handleConfirm}
+            disabled={loading}
+          >
+            {loading
+              ? <><Spinner size={13} light /> Revoking…</>
+              : 'Confirm revocation'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+});
+
 /* ─── Detail panel ───────────────────────────────────── */
 
 function DetailRow({ label, value, mono, children }) {
@@ -164,10 +240,9 @@ function DetailRow({ label, value, mono, children }) {
   );
 }
 
-function DetailPanel({ cert, onClose, onRetry, onRetryEmail, retrying, retryingEmail }) {
+function DetailPanel({ cert, onClose, onRetry, onRetryEmail, retrying, retryingEmail, onRevokeOpen }) {
   const panelRef = useRef(null);
 
-  // trap focus / close on Escape
   useEffect(() => {
     const handleKey = (e) => { if (e.key === 'Escape') onClose(); };
     document.addEventListener('keydown', handleKey);
@@ -192,18 +267,15 @@ function DetailPanel({ cert, onClose, onRetry, onRetryEmail, retrying, retryingE
 
   return (
     <>
-      {/* Backdrop */}
       <div className="cl-backdrop" onClick={onClose} aria-hidden="true" />
-
-      {/* Panel */}
       <aside
         ref={panelRef}
         className="cl-panel"
         role="dialog"
         aria-label="Certificate details"
         tabIndex={-1}
+        onClick={(e) => e.stopPropagation()}
       >
-        {/* Panel header */}
         <div className="cl-panel__head">
           <div>
             <p className="label" style={{ color: 'var(--color-primary)', marginBottom: 4 }}>
@@ -219,10 +291,7 @@ function DetailPanel({ cert, onClose, onRetry, onRetryEmail, retrying, retryingE
           </div>
         </div>
 
-        {/* Scrollable body */}
         <div className="cl-panel__body">
-
-          {/* Student section */}
           <div className="cl-detail__section">
             <span className="cl-detail__section-title label">Student</span>
             <DetailRow label="Full name"  value={cert.student?.full_name} />
@@ -230,7 +299,6 @@ function DetailPanel({ cert, onClose, onRetry, onRetryEmail, retrying, retryingE
             <DetailRow label="Email"      value={cert.student?.email} />
           </div>
 
-          {/* Academic section */}
           <div className="cl-detail__section">
             <span className="cl-detail__section-title label">Academic record</span>
             <DetailRow label="Department"         value={cert.department} />
@@ -240,13 +308,12 @@ function DetailPanel({ cert, onClose, onRetry, onRetryEmail, retrying, retryingE
             <DetailRow label="GPA"                value={cert.gpa} />
           </div>
 
-          {/* Record section */}
           <div className="cl-detail__section">
             <span className="cl-detail__section-title label">Record</span>
             <DetailRow label="Issued by"   value={`${cert.issued_by?.full_name} (${cert.issued_by?.job_title})`} />
             <DetailRow label="Issued on"   value={fmtDateTime(cert.issued_at)} />
             {cert.revoked_at && (
-              <DetailRow label="Revoked on" value={fmtDateTime(cert.revoked_at)} />
+              <DetailRow label="Revoked on"    value={fmtDateTime(cert.revoked_at)} />
             )}
             {cert.revoke_reason && (
               <DetailRow label="Revoke reason" value={cert.revoke_reason} />
@@ -266,7 +333,6 @@ function DetailPanel({ cert, onClose, onRetry, onRetryEmail, retrying, retryingE
             )}
           </div>
 
-          {/* Email section */}
           <div className="cl-detail__section">
             <span className="cl-detail__section-title label">Notifications</span>
             <DetailRow label="Issuance email">
@@ -277,9 +343,7 @@ function DetailPanel({ cert, onClose, onRetry, onRetryEmail, retrying, retryingE
             </DetailRow>
           </div>
 
-          {/* Actions */}
           <div className="cl-panel__actions">
-            {/* PDF download */}
             {cert.cloudinary_url && (
               <a
                 href={cert.cloudinary_url}
@@ -292,7 +356,6 @@ function DetailPanel({ cert, onClose, onRetry, onRetryEmail, retrying, retryingE
               </a>
             )}
 
-            {/* QR download */}
             {cert.status === 'CONFIRMED' && (
               <button
                 className="cl-btn cl-btn--secondary cl-btn--full"
@@ -302,25 +365,36 @@ function DetailPanel({ cert, onClose, onRetry, onRetryEmail, retrying, retryingE
               </button>
             )}
 
-            {/* Retry blockchain */}
+            {cert.status === 'CONFIRMED' && (
+              <button
+                className="cl-btn cl-btn--danger cl-btn--full"
+                onClick={() => onRevokeOpen(cert.id)}
+              >
+                Revoke certificate
+              </button>
+            )}
+
             {cert.status === 'FAILED' && (
               <button
                 className="cl-btn cl-btn--warning cl-btn--full"
                 onClick={() => onRetry(cert.id)}
                 disabled={retrying}
               >
-                {retrying ? <><Spinner size={13} light /> Retrying…</> : <><RetryIcon /> Retry blockchain confirmation</>}
+                {retrying
+                  ? <><Spinner size={13} light /> Retrying…</>
+                  : <><RetryIcon /> Retry blockchain confirmation</>}
               </button>
             )}
 
-            {/* Retry email */}
             {cert.issuance_email_status === 'FAILED' && cert.status === 'CONFIRMED' && (
               <button
                 className="cl-btn cl-btn--ghost cl-btn--full"
                 onClick={() => onRetryEmail(cert.id)}
                 disabled={retryingEmail}
               >
-                {retryingEmail ? <><Spinner size={13} /> Resending…</> : <><MailIcon /> Resend issuance email</>}
+                {retryingEmail
+                  ? <><Spinner size={13} /> Resending…</>
+                  : <><MailIcon /> Resend issuance email</>}
               </button>
             )}
           </div>
@@ -333,15 +407,24 @@ function DetailPanel({ cert, onClose, onRetry, onRetryEmail, retrying, retryingE
 /* ─── Toast ──────────────────────────────────────────── */
 
 function Toast({ toast, onDismiss }) {
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(onDismiss, 3500);
+    return () => clearTimeout(t);
+  }, [toast, onDismiss]);
+
   if (!toast) return null;
+
   return (
-    <div className={`cl-toast cl-toast--${toast.type}`} role="alert">
-      <span className="cl-toast__msg">{toast.message}</span>
-      <button className="cl-toast__close" onClick={onDismiss} aria-label="Dismiss">×</button>
+    <div className={`cl-toast cl-toast--${toast.type}`} role="status" aria-live="polite">
+      {toast.type === 'success'
+        ? <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.4"/><path d="M5 8l2.5 2.5 4-4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>
+        : <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.4"/><path d="M8 5v3.5M8 11h.01" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>
+      }
+      <span>{toast.message}</span>
     </div>
   );
 }
-
 /* ─── Empty state ────────────────────────────────────── */
 
 function EmptyState({ filtered }) {
@@ -368,24 +451,25 @@ function EmptyState({ filtered }) {
 /* ─── Main component ─────────────────────────────────── */
 
 export default function CertificatesList() {
-  const [certs,        setCerts]        = useState([]);
-  const [total,        setTotal]        = useState(0);
-  const [page,         setPage]         = useState(1);
-  const [search,       setSearch]       = useState('');
-  const [searchInput,  setSearchInput]  = useState('');
-  const [status,       setStatus]       = useState('ALL');
-  const [loading,      setLoading]      = useState(true);
-  const [selected,     setSelected]     = useState(null);   // cert obj for detail panel
-  const [retrying,     setRetrying]     = useState(false);
-  const [retryingEmail,setRetryingEmail]= useState(false);
-  const [toast,        setToast]        = useState(null);
-  const [org,          setOrg]          = useState(null);
-  const [sidebarOpen,  setSidebarOpen]  = useState(false);
+  const [certs,         setCerts]         = useState([]);
+  const [total,         setTotal]         = useState(0);
+  const [page,          setPage]          = useState(1);
+  const [search,        setSearch]        = useState('');
+  const [searchInput,   setSearchInput]   = useState('');
+  const [status,        setStatus]        = useState('ALL');
+  const [loading,       setLoading]       = useState(true);
+  const [selected,      setSelected]      = useState(null);
+  const [retrying,      setRetrying]      = useState(false);
+  const [retryingEmail, setRetryingEmail] = useState(false);
+  const [toast,         setToast]         = useState(null);
+  const [org,           setOrg]           = useState(null);
+  const [sidebarOpen,   setSidebarOpen]   = useState(false);
+  const [revokeTargetId, setRevokeTargetId] = useState(null); // just the cert id
 
-  const api        = useApiPrivate();
-  const { auth }   = useAuth();
-  const user       = auth.user;
-  const totalPages = Math.ceil(total / PAGE_SIZE);
+  const api         = useApiPrivate();
+  const { auth }    = useAuth();
+  const user        = auth.user;
+  const totalPages  = Math.ceil(total / PAGE_SIZE);
   const searchTimer = useRef(null);
 
   /* Fetch org profile */
@@ -395,18 +479,20 @@ export default function CertificatesList() {
       .catch(console.error);
   }, [api]);
 
-  /* Toast helper */
-  const showToast = useCallback((type, message) => {
+  /* Toast helper — stable ref so it never appears in fetchCerts deps */
+  const toastRef = useRef(null);
+  toastRef.current = (type, message) => {
     setToast({ type, message });
     setTimeout(() => setToast(null), 5000);
-  }, []);
+  };
+  const showToast = useCallback((type, message) => toastRef.current(type, message), []);
 
   /* Fetch certificates */
   const fetchCerts = useCallback(async () => {
     setLoading(true);
     try {
       const params = { page, limit: PAGE_SIZE };
-      if (search)          params.search = search;
+      if (search)           params.search = search;
       if (status !== 'ALL') params.status = status;
 
       const res = await api.get('/api/certificates', { params });
@@ -443,7 +529,6 @@ export default function CertificatesList() {
       await api.post(`/api/certificates/${certId}/retry`);
       showToast('success', 'Certificate confirmed on the blockchain.');
       await fetchCerts();
-      // refresh panel data
       setSelected(prev => prev ? { ...prev, status: 'CONFIRMED' } : prev);
     } catch (err) {
       showToast('error', err.response?.data?.message ?? 'Retry failed. Please try again.');
@@ -467,8 +552,32 @@ export default function CertificatesList() {
     }
   };
 
-  /* Open panel */
-  const openPanel = (cert) => setSelected(cert);
+  /* Revoke — called by RevokeModal, returns error string or null */
+  const handleRevoke = useCallback(async (reason) => {
+    try {
+      await api.post(
+        `/api/certificates/${revokeTargetId}/revoke`,
+        { reason },
+        {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      showToast('success', 'Certificate revoked successfully.');
+      setRevokeTargetId(null);
+      await fetchCerts();
+      setSelected(prev =>
+        prev?.id === revokeTargetId ? { ...prev, status: 'REVOKED' } : prev
+      );
+      return null; // no error
+    } catch (err) {
+      return err.response?.data?.message ?? 'Revocation failed. Please try again.';
+    }
+  }, [api, revokeTargetId, fetchCerts, showToast]);
+
+  /* Panel open/close */
+  const openPanel  = (cert) => setSelected(cert);
   const closePanel = () => setSelected(null);
 
   const isFiltered = search !== '' || status !== 'ALL';
@@ -566,9 +675,7 @@ export default function CertificatesList() {
                           <td>{cert.year_of_graduation}</td>
                           <td>{fmt(cert.issued_at)}</td>
                           <td><StatusBadge status={cert.status} /></td>
-                          <td>
-                            <EmailDot status={cert.issuance_email_status} />
-                          </td>
+                          <td><EmailDot status={cert.issuance_email_status} /></td>
                           <td onClick={(e) => e.stopPropagation()}>
                             <button
                               className="cl-view-btn"
@@ -625,6 +732,15 @@ export default function CertificatesList() {
           onRetryEmail={handleRetryEmail}
           retrying={retrying}
           retryingEmail={retryingEmail}
+          onRevokeOpen={(id) => setRevokeTargetId(id)}
+        />
+      )}
+
+      {/* Revoke modal — self-contained, owns its own textarea state */}
+      {revokeTargetId && (
+        <RevokeModal
+          onCancel={() => setRevokeTargetId(null)}
+          onConfirm={handleRevoke}
         />
       )}
 
