@@ -177,7 +177,10 @@ export default function OrgSuperAdminSidebar({ open, onClose, org }) {
                   <li key={item.to}>
                     <NavLink
                       to={item.to}
-                      end={item.to === '/org/dashboard'}
+                      end={
+                        item.to === '/org-super-admin/dashboard' ||
+                        item.to === '/org/certificates'
+                      }
                       className={({ isActive }) =>
                         `osa-nav-item ${isActive ? 'osa-nav-item--active' : ''}`
                       }

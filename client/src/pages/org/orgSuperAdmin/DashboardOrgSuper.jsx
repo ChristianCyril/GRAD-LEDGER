@@ -54,9 +54,6 @@ function CertRow({ cert, onClick }) {
         </span>
       </div>
       <span className={`osa-badge ${s.cls}`}>{s.label}</span>
-      <svg className="cert-row__chevron" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-        <path d="M5 3l4 4-4 4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
     </button>
   );
 }
@@ -127,15 +124,15 @@ export default function DashboardOrgSuper() {
       setLoading(true);
       setError('');
       try {
-        const [orgRes, /*analyticsRes, certsRes,*/ adminsRes] = await Promise.all([
+        const [orgRes, analyticsRes, certsRes, adminsRes] = await Promise.all([
           api.get('/api/organisations/profile'),
-          //api.get('/api/org/analytics'),
-          //api.get('/api/certificates?page=1&limit=5'),
+          api.get('/api/organisations/analytics'),
+          api.get('/api/certificates?page=1&limit=5'),
           api.get('/api/org-super-admin'),
         ]);
         setOrg(orgRes.data.data);
-       // setAnalytics(analyticsRes.data.data);
-        //setRecentCerts(certsRes.data?.data ?? []);
+        setAnalytics(analyticsRes.data.data);
+        setRecentCerts(certsRes.data?.data ?? []);
         setAdmins(adminsRes.data?.data);
       } catch {
         setError('Failed to load dashboard data. Please refresh.');
@@ -176,7 +173,7 @@ export default function DashboardOrgSuper() {
     },
     {
       label: 'Confirmed',
-      value: analytics?.totalIssued - analytics?.totalPending - analytics?.totalFailed - analytics?.totalRevoked,
+      value: analytics?.totalConfirmed,
       sub: 'On blockchain',
       accent: 'var(--green-400)',
       bg: 'var(--green-50)',
@@ -376,7 +373,6 @@ export default function DashboardOrgSuper() {
                       <CertRow
                         key={cert.id}
                         cert={cert}
-                        onClick={() => navigate(`/org/certificates/${cert.id}`)}
                       />
                     ))}
                   </div>
