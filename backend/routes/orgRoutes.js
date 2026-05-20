@@ -14,7 +14,7 @@ router.post('/register', upload.fields([
 
 router.patch('/profile',authenticate,authorise('ORG_SUPER_ADMIN'),upload.single('logo'),updateOrgProfile)
 
-router.get('/profile',authenticate,authorise('ORG_SUPER_ADMIN'),getOrgProfile)
-router.get('/analytics',authenticate,authorise('ORG_SUPER_ADMIN'),getOrgAnalytics)
+router.get('/profile',authenticate,authorise('ORG_SUPER_ADMIN','ORG_ADMIN'),getOrgProfile)
+router.get('/analytics',authenticate,authorise('ORG_SUPER_ADMIN','ORG_ADMIN'),getOrgAnalytics)
 
 export default router
