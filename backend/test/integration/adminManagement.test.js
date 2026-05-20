@@ -108,13 +108,19 @@ describe('Admin Management Integration Tests', () => {
 
   afterAll(async () => {
     // Clean up all test data
-    await prisma.orgUser.deleteMany({
-      where: { org_id: orgId }
-    }).catch(() => {});
+    try {
+      await prisma.orgUser.deleteMany({
+        where: { org_id: orgId }
+      }).catch(() => {});
 
-    await prisma.organisation.delete({
-      where: { id: orgId }
-    }).catch(() => {});
+      await prisma.organisation.delete({
+        where: { id: orgId }
+      }).catch(() => {});
+    } catch (error) {
+      console.error('Error cleaning up adminManagement test data:', error);
+    }
+    
+    // Do NOT disconnect - let global teardown handle it
   });
 
   // ─── POST /api/org-super-admin (createAdmin) Tests ──────────────────────────

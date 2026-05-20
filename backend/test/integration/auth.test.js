@@ -87,39 +87,45 @@ describe('Auth Integration Tests', () => {
 
   afterAll(async () => {
     // Clean up all test data
-    await prisma.refreshToken.deleteMany({
-      where: {
-        OR: [
-          { user_id: superAdminId },
-          { user_id: orgSuperAdminId },
-          { user_id: orgAdminId }
-        ]
+    try {
+      await prisma.refreshToken.deleteMany({
+        where: {
+          OR: [
+            { user_id: superAdminId },
+            { user_id: orgSuperAdminId },
+            { user_id: orgAdminId }
+          ]
+        }
+      });
+
+      if (orgAdminId) {
+        await prisma.orgUser.delete({
+          where: { id: orgAdminId }
+        }).catch(() => {});
       }
-    });
 
-    if (orgAdminId) {
-      await prisma.orgUser.delete({
-        where: { id: orgAdminId }
-      }).catch(() => {});
-    }
+      if (orgSuperAdminId) {
+        await prisma.orgUser.delete({
+          where: { id: orgSuperAdminId }
+        }).catch(() => {});
+      }
 
-    if (orgSuperAdminId) {
-      await prisma.orgUser.delete({
-        where: { id: orgSuperAdminId }
-      }).catch(() => {});
-    }
+      if (orgId) {
+        await prisma.organisation.delete({
+          where: { id: orgId }
+        }).catch(() => {});
+      }
 
-    if (orgId) {
-      await prisma.organisation.delete({
-        where: { id: orgId }
-      }).catch(() => {});
+      if (superAdminId) {
+        await prisma.superAdmin.delete({
+          where: { id: superAdminId }
+        }).catch(() => {});
+      }
+    } catch (error) {
+      console.error('Error cleaning up auth test data:', error);
     }
-
-    if (superAdminId) {
-      await prisma.superAdmin.delete({
-        where: { id: superAdminId }
-      }).catch(() => {});
-    }
+    
+    // Do NOT disconnect - let global teardown handle it
   });
 
   describe('POST /api/auth/super-admin/login', () => {

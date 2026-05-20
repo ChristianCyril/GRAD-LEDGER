@@ -167,39 +167,45 @@ describe('Super Admin Integration Tests', () => {
 
   afterAll(async () => {
     // Clean up all test data
-    await prisma.refreshToken.deleteMany({
-      where: {
-        OR: [
-          { user_id: superAdminId },
-          { user_id: approvedOrgSuperAdminId },
-          { user_id: approvedOrgAdminId }
-        ]
+    try {
+      await prisma.refreshToken.deleteMany({
+        where: {
+          OR: [
+            { user_id: superAdminId },
+            { user_id: approvedOrgSuperAdminId },
+            { user_id: approvedOrgAdminId }
+          ]
+        }
+      });
+
+      if (approvedOrgAdminId) {
+        await prisma.orgUser.delete({
+          where: { id: approvedOrgAdminId }
+        }).catch(() => {});
       }
-    });
 
-    if (approvedOrgAdminId) {
-      await prisma.orgUser.delete({
-        where: { id: approvedOrgAdminId }
-      }).catch(() => {});
-    }
+      if (approvedOrgSuperAdminId) {
+        await prisma.orgUser.delete({
+          where: { id: approvedOrgSuperAdminId }
+        }).catch(() => {});
+      }
 
-    if (approvedOrgSuperAdminId) {
-      await prisma.orgUser.delete({
-        where: { id: approvedOrgSuperAdminId }
-      }).catch(() => {});
-    }
+      if (approvedOrgId) {
+        await prisma.organisation.delete({
+          where: { id: approvedOrgId }
+        }).catch(() => {});
+      }
 
-    if (approvedOrgId) {
-      await prisma.organisation.delete({
-        where: { id: approvedOrgId }
-      }).catch(() => {});
+      if (superAdminId) {
+        await prisma.superAdmin.delete({
+          where: { id: superAdminId }
+        }).catch(() => {});
+      }
+    } catch (error) {
+      console.error('Error cleaning up superAdmin test data:', error);
     }
-
-    if (superAdminId) {
-      await prisma.superAdmin.delete({
-        where: { id: superAdminId }
-      }).catch(() => {});
-    }
+    
+    // Do NOT disconnect - let global teardown handle it
   });
 
   describe('GET /api/super-admin/organisations/pending', () => {
