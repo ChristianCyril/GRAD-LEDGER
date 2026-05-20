@@ -9,8 +9,8 @@ const transporter = nodemailer.createTransport({
 export const sendPasswordResetEmail = async (toEmail, resetToken) => {
   const resetLink = `${process.env.CLIENT_URL}/reset-password?token=${resetToken}`;
   await transporter.sendMail({
-    from:    process.env.MAIL_FROM,
-    to:      toEmail,
+    from: process.env.MAIL_FROM,
+    to: toEmail,
     subject: 'Reset Your Password — Grad-Ledger',
     html: `
       <p>A password reset was requested for your Grad-Ledger account.</p>
@@ -25,8 +25,8 @@ export const sendPasswordResetEmail = async (toEmail, resetToken) => {
 
 export const sendRegistrationReceivedEmail = async (toEmail, orgName) => {
   await transporter.sendMail({
-    from:    process.env.MAIL_FROM,
-    to:      toEmail,
+    from: process.env.MAIL_FROM,
+    to: toEmail,
     subject: 'Registration Received — Grad-Ledger',
     html: `
       <!DOCTYPE html>
@@ -50,8 +50,8 @@ export const sendRegistrationReceivedEmail = async (toEmail, orgName) => {
 
 export const sendNewRegistrationNotificationEmail = async () => {
   await transporter.sendMail({
-    from:    process.env.MAIL_FROM,
-    to:      process.env.SUPER_ADMIN_EMAIL,
+    from: process.env.MAIL_FROM,
+    to: process.env.SUPER_ADMIN_EMAIL,
     subject: 'New Organisation Registration Pending — Grad-Ledger',
     html: `
       <!DOCTYPE html>
@@ -89,8 +89,8 @@ export const sendNewRegistrationNotificationEmail = async () => {
 
 export const sendOrgApprovedEmail = async (toEmail, orgName, loginEmail) => {
   await transporter.sendMail({
-    from:    process.env.MAIL_FROM,
-    to:      toEmail,
+    from: process.env.MAIL_FROM,
+    to: toEmail,
     subject: 'Your Registration Has Been Approved — Grad-Ledger',
     html: `
       <!DOCTYPE html>
@@ -136,8 +136,8 @@ export const sendOrgApprovedEmail = async (toEmail, orgName, loginEmail) => {
 
 export const sendOrgRejectedEmail = async (toEmail, orgName, reason) => {
   await transporter.sendMail({
-    from:    process.env.MAIL_FROM,
-    to:      toEmail,
+    from: process.env.MAIL_FROM,
+    to: toEmail,
     subject: 'Your Registration Was Not Approved — Grad-Ledger',
     html: `
       <!DOCTYPE html>
@@ -169,8 +169,8 @@ export const sendOrgRejectedEmail = async (toEmail, orgName, reason) => {
 
 export const sendOrgDisabledEmail = async (toEmail, orgName) => {
   await transporter.sendMail({
-    from:    process.env.MAIL_FROM,
-    to:      toEmail,
+    from: process.env.MAIL_FROM,
+    to: toEmail,
     subject: 'Your Organisation Has Been Suspended — Grad-Ledger',
     html: `
       <!DOCTYPE html>
@@ -205,8 +205,8 @@ export const sendOrgDisabledEmail = async (toEmail, orgName) => {
 
 export const sendAdminCreatedEmail = async (toEmail, adminName, orgName, tempPassword) => {
   await transporter.sendMail({
-    from:    process.env.MAIL_FROM,
-    to:      toEmail,
+    from: process.env.MAIL_FROM,
+    to: toEmail,
     subject: `Your Admin Account — ${orgName} on CertChain`,
     html: `
       <!DOCTYPE html>
@@ -253,8 +253,8 @@ export const sendCertificateIssuedEmail = async (
   toEmail, studentName, certId, cloudinaryUrl, qrCodeDataUrl
 ) => {
   await transporter.sendMail({
-    from:    process.env.MAIL_FROM,
-    to:      toEmail,
+    from: process.env.MAIL_FROM,
+    to: toEmail,
     subject: 'Your Certificate is Ready Grad-Ledger',
     html: `
       <!DOCTYPE html>
@@ -271,7 +271,7 @@ export const sendCertificateIssuedEmail = async (
 
           <p>Use this code to verify your certificate at any time:</p>
           <div style="margin: 16px 0;">
-            
+            <a
               href="${process.env.CLIENT_URL}/verify/${certId}"
               style="
                 background-color: #2563eb;
@@ -303,8 +303,8 @@ export const sendCertificateIssuedEmail = async (
       </html>
     `,
     attachments: [{
-      filename:    'qrcode.png',
-      content:     Buffer.from(qrCodeDataUrl.split(',')[1], 'base64'),
+      filename: 'qrcode.png',
+      content: Buffer.from(qrCodeDataUrl.split(',')[1], 'base64'),
       contentType: 'image/png'
     }]
   });
@@ -312,8 +312,8 @@ export const sendCertificateIssuedEmail = async (
 
 export const sendRevocationEmail = async (toEmail, studentName, orgName) => {
   await transporter.sendMail({
-    from:    process.env.MAIL_FROM,
-    to:      toEmail,
+    from: process.env.MAIL_FROM,
+    to: toEmail,
     subject: 'Certificate Revocation Notice — CertChain',
     html: `
       <!DOCTYPE html>
