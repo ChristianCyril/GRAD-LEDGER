@@ -35,6 +35,12 @@ enum CertStatus {
   REVOKED
 }
 
+enum EmailStatus {
+  SENT
+  FAILED
+  PENDING
+}
+
 enum AuditAction {
   CERTIFICATE_ISSUED
   CERTIFICATE_REVOKED
@@ -111,7 +117,7 @@ model OrgUser {
   phone         String
   password_hash String
   status        UserStatus  @default(ACTIVE)
-
+  reg_email_status EmailStatus @default(PENDING) 
   password_reset_token   String?
   password_reset_expires DateTime?
 
@@ -168,7 +174,9 @@ model Certificate {
   revoke_reason String?
   issued_at     DateTime   @default(now())
   revoked_at    DateTime?
-
+  
+  //Issuance Email Status
+  issuance_email_status EmailStatus @default(PENDING)
   // Relations
   organisation Organisation @relation(fields: [org_id], references: [id])
   student      Student      @relation(fields: [student_id], references: [id])
