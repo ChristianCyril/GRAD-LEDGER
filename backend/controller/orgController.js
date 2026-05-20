@@ -392,3 +392,52 @@ export const getOrgProfile = async (req, res) => {
     return res.status(500).json({ message: 'Internal server error' });
   }
 };
+
+export const getOrgAnalytics = async (req, res) => {
+  try {
+    const orgId = req.user.orgId;
+
+    // ── 1. Run all counts in parallel ────────────────────────────────────────
+    const [
+      totalIssued,
+      totalRevoked,
+      totalPending,
+      totalFailed,
+      totalEmailFailed
+    ] = await Promise.all([
+      prisma.certificate.count({
+        where: { org_id: orgId }
+      }),
+      prisma.certificate.count({
+        where: { org_id: orgId, status: 'REVOKED' }
+      }),
+      prisma.certificate.count({
+        where: { org_id: orgId, status: 'PENDING' }
+      }),
+      prisma.certificate.count({
+        where: { org_id: orgId, status: 'FAILED' }
+      }),
+      prisma.certificate.count({
+        where: {
+          org_id:                orgId,
+          issuance_email_status: 'FAILED'
+        }
+      })
+    ]);
+
+    return res.status(200).json({
+      data: {
+        totalIssued,
+        totalConfirmed: totalIssued - totalRevoked - totalPending - totalFailed,
+        totalRevoked,
+        totalPending,
+        totalFailed,
+        totalEmailFailed
+      }
+    });
+
+  } catch (err) {
+    console.error('getOrgAnalytics error:', err);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
