@@ -163,11 +163,31 @@ export const issueCertificate = async (req, res) => {
     }
 
     // ── 9. Upload PDF to Cloudinary ──────────────────────────────────────────
-    const uploadResult = await cloudinary.uploader.upload(tempFilePath, {
-      folder:        'certchain/certificates',
-      resource_type: 'raw',
-      public_id:     certId
-    });
+    let uploadResult;
+    try {
+      uploadResult = await cloudinary.uploader.upload(tempFilePath, {
+        folder:        'certchain/certificates',
+        resource_type: 'raw',
+        public_id:     certId
+      });
+    } catch (cloudinaryErr) {
+      console.error('Cloudinary upload error:', {
+        code: cloudinaryErr.code,
+        message: cloudinaryErr.message,
+        syscall: cloudinaryErr.syscall,
+        hostname: cloudinaryErr.hostname
+      });
+      
+      // Check if it's a network error
+      if (cloudinaryErr.code === 'EAI_AGAIN' || cloudinaryErr.code === 'ENOTFOUND') {
+        return res.status(503).json({
+          message: 'Cloudinary service is currently unavailable. Please check your network connection and Cloudinary credentials.',
+          error: cloudinaryErr.message,
+          hint: 'Ensure CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET are set in your .env file'
+        });
+      }
+      throw cloudinaryErr;
+    }
 
     const cloudinaryUrl = uploadResult.secure_url;
 
