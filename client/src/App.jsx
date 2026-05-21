@@ -18,6 +18,7 @@ import ManageAdmins from "./pages/org/orgSuperAdmin/ManageAdmins";
 import OrgProfile from "./pages/org/orgSuperAdmin/OrgProfile";
 import IssueCertificate from "./pages/org/general/IssueCertificate";
 import CertificatesList from "./pages/org/general/CertificatesList";
+import AuditLog from "./pages/org/general/AuditLog";
 
 export default function App() {
   return (
@@ -43,6 +44,7 @@ export default function App() {
         <Route element={<ProtectedRoute roles={['ORG_SUPER_ADMIN', 'ORG_ADMIN']} />}>
           <Route path='/org/certificates/issue' element={<IssueCertificate />} />
           <Route path='org/certificates' element={<CertificatesList />} />
+          <Route path='/org/audit' element={<AuditLog/>} />
         </Route>
 
         <Route element={<ProtectedRoute roles={['SUPER_ADMIN']} />}>

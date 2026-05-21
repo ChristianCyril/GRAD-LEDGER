@@ -24,7 +24,7 @@ app.use('/api/organisations',orgRoutes)
 app.use('/api/super-admin',superAdminRoutes)
 app.use('/api/org-super-admin',orgSuperAdminRoutes)
 app.use('/api/certificates',certificateRoutes)
-app.use('api/audit',auditRoutes)
+app.use('/api/audit',auditRoutes)
 
 app.listen(PORT,()=>{
   console.log(`GRAD-LEDGER Server running on pot ${PORT}`)

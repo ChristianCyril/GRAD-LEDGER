@@ -154,7 +154,8 @@ export const getAdmins = async (req, res) => {
           phone:      true,
           status:     true,
           created_at: true,
-          updated_at: true
+          updated_at: true,
+          role:       true
         },
         orderBy: { created_at: 'desc' }
       }),
