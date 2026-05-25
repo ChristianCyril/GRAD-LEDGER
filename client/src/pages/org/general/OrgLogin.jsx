@@ -60,6 +60,19 @@ export default function OrgLogin() {
     <div className="login-page">
       {/* Left panel — branding */}
       <div className="login-panel login-panel--brand">
+        {/* Return button */}
+        <button
+          onClick={() => navigate('/')}
+          className="brand-return-btn"
+          aria-label="Return to homepage"
+          title="Return to homepage"
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <line x1="19" y1="12" x2="5" y2="12" />
+            <polyline points="12 19 5 12 12 5" />
+          </svg>
+        </button>
+
         <div className="brand-content">
           <div className="brand-logo">
             <span className="brand-logo__mark">⬡</span>

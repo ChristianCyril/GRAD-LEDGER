@@ -1,6 +1,6 @@
 import { useNavigate, Link } from 'react-router-dom';
 import './HomePage.css';
-
+import FooterUnrestricted from '../components/FooterUnrestricted';
 /* ─── Icons ──────────────────────────────────────────── */
 
 function ShieldIcon() {
@@ -124,7 +124,7 @@ export default function HomePage() {
         <div className="hp-nav__inner">
           <div className="hp-logo">
             <span className="hp-logo__mark">⬡</span>
-            <span className="hp-logo__text">Block-Ledger</span>
+            <span className="hp-logo__text">Grad-Ledger</span>
           </div>
           <nav className="hp-nav__links">
             <a href="#features" className="hp-nav__link">Features</a>
@@ -160,7 +160,7 @@ export default function HomePage() {
           </h1>
 
           <p className="hp-hero__sub">
-            Block-Ledger issues and verifies academic certificates on an
+            Grad-Ledger issues and verifies academic certificates on an
             immutable public record. Institutions issue. Students receive.
             Anyone can verify — in seconds.
           </p>
@@ -236,7 +236,7 @@ export default function HomePage() {
       <section className="hp-section hp-section--alt" id="features">
         <div className="hp-section__inner">
           <div className="hp-section__head">
-            <p className="hp-section__eyebrow">Why Block-Ledger</p>
+            <p className="hp-section__eyebrow">Why Grad-Ledger</p>
             <h2 className="hp-section__title">Built on unbreakable foundations</h2>
             <p className="hp-section__sub">
               Every certificate is cryptographically sealed. No server, no admin,
@@ -370,23 +370,7 @@ export default function HomePage() {
       </section>
 
       {/* ── Footer ── */}
-      <footer className="hp-footer">
-        <div className="hp-footer__inner">
-          <div className="hp-logo">
-            <span className="hp-logo__mark">⬡</span>
-            <span className="hp-logo__text">Block-Ledger</span>
-          </div>
-          <div className="hp-footer__links">
-            <Link to="/verify"           className="hp-footer__link">Verify certificate</Link>
-            <Link to="/org-registration" className="hp-footer__link">Register institution</Link>
-            <Link to="/org-login"        className="hp-footer__link">Institution login</Link>
-          </div>
-          <p className="hp-footer__copy">
-            © {new Date().getFullYear()} Block-Ledger. All rights reserved.
-          </p>
-        </div>
-      </footer>
-
+      <FooterUnrestricted/>
     </div>
   );
 }

@@ -164,7 +164,7 @@ export default function IssueCertificate() {
       try {
         const orgRes = await api.get('/api/organisations/profile')
         setOrg(orgRes.data.data);
-      } catch(err) {
+      } catch (err) {
         console.error(err)
       }
     }
@@ -264,204 +264,204 @@ export default function IssueCertificate() {
         <Header org={org} user={user} setSidebarOpen={setSidebarOpen} />
         <div className="ic-page">
 
-        {/* Top bar */}
+          {/* Top bar */}
 
-        <header className="ic-header">
-          <div className="ic-header__eyebrow label">Certificates</div>
-          <h1 className="ic-header__title">Issue certificate</h1>
-          <p className="ic-header__sub">Complete all three steps to issue and record a new academic certificate.</p>
-        </header>
+          <header className="ic-header">
+            <div className="ic-header__eyebrow label">Certificates</div>
+            <h1 className="ic-header__title">Issue certificate</h1>
+            <p className="ic-header__sub">Complete all three steps to issue and record a new academic certificate.</p>
+          </header>
 
-        <div className="ic-card">
-          <StepIndicator current={step} />
+          <div className="ic-card">
+            <StepIndicator current={step} />
 
-          <div className="ic-body">
-            {/* ── Step 1 ── */}
-            {step === 1 && (
-              <div className="ic-pane" key="step1">
-                <h2 className="ic-pane__title">Student details</h2>
-                <p className="ic-pane__sub">Enter the student's personal and academic information.</p>
+            <div className="ic-body">
+              {/* ── Step 1 ── */}
+              {step === 1 && (
+                <div className="ic-pane" key="step1">
+                  <h2 className="ic-pane__title">Student details</h2>
+                  <p className="ic-pane__sub">Enter the student's personal and academic information.</p>
 
-                <div className="ic-fields ic-fields--2col">
-                  {STEP_1_FIELDS.map((name) => (
-                    <FieldInput key={name} name={name} value={form[name]}
-                      onChange={handleChange} error={errors[name]} />
-                  ))}
+                  <div className="ic-fields ic-fields--2col">
+                    {STEP_1_FIELDS.map((name) => (
+                      <FieldInput key={name} name={name} value={form[name]}
+                        onChange={handleChange} error={errors[name]} />
+                    ))}
+                  </div>
+
+                  <div className="ic-divider" />
+
+                  <div className="ic-fields ic-fields--3col">
+                    {STEP_1_ROW2.map((name) => (
+                      <FieldInput key={name} name={name} value={form[name]}
+                        onChange={handleChange} error={errors[name]} />
+                    ))}
+                  </div>
                 </div>
+              )}
 
-                <div className="ic-divider" />
+              {/* ── Step 2 ── */}
+              {step === 2 && (
+                <div className="ic-pane" key="step2">
+                  <h2 className="ic-pane__title">Certificate PDF</h2>
+                  <p className="ic-pane__sub">Upload the official PDF. A hash will be computed and recorded.</p>
 
-                <div className="ic-fields ic-fields--3col">
-                  {STEP_1_ROW2.map((name) => (
-                    <FieldInput key={name} name={name} value={form[name]}
-                      onChange={handleChange} error={errors[name]} />
-                  ))}
+                  <div
+                    className={`ic-dropzone ${drag ? 'ic-dropzone--drag' : ''} ${file ? 'ic-dropzone--filled' : ''}`}
+                    onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
+                    onDragLeave={() => setDrag(false)}
+                    onDrop={handleDrop}
+                    onClick={() => !file && fileInputRef.current?.click()}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => e.key === 'Enter' && !file && fileInputRef.current?.click()}
+                    aria-label="Upload PDF"
+                  >
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="application/pdf"
+                      className="ic-dropzone__input"
+                      onChange={(e) => acceptFile(e.target.files[0])}
+                    />
+
+                    {!file ? (
+                      <div className="ic-dropzone__empty">
+                        <span className="ic-dropzone__icon"><UploadIcon /></span>
+                        <p className="ic-dropzone__prompt">
+                          Drag and drop a PDF here, or <span className="ic-dropzone__link">browse</span>
+                        </p>
+                        <p className="ic-dropzone__hint">PDF only · max 10 MB</p>
+                      </div>
+                    ) : (
+                      <div className="ic-dropzone__preview">
+                        <span className="ic-dropzone__file-icon"><FileIcon /></span>
+                        <div className="ic-dropzone__file-info">
+                          <span className="ic-dropzone__file-name">{file.name}</span>
+                          <span className="ic-dropzone__file-size text-muted">
+                            {(file.size / 1024).toFixed(1)} KB
+                          </span>
+                        </div>
+                        <div className="ic-dropzone__actions">
+                          <a
+                            href={URL.createObjectURL(file)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="ic-link"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            Preview
+                          </a>
+                          <button
+                            className="ic-btn ic-btn--ghost ic-btn--sm"
+                            onClick={(e) => { e.stopPropagation(); setFile(null); }}
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {fileErr && (
+                    <p className="ic-field__error ic-field__error--standalone">{fileErr}</p>
+                  )}
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* ── Step 2 ── */}
-            {step === 2 && (
-              <div className="ic-pane" key="step2">
-                <h2 className="ic-pane__title">Certificate PDF</h2>
-                <p className="ic-pane__sub">Upload the official PDF. A hash will be computed and recorded.</p>
+              {/* ── Step 3 ── */}
+              {step === 3 && (
+                <div className="ic-pane" key="step3">
+                  <h2 className="ic-pane__title">Confirm & issue</h2>
+                  <p className="ic-pane__sub">Review all details before issuing. This action cannot be undone.</p>
 
-                <div
-                  className={`ic-dropzone ${drag ? 'ic-dropzone--drag' : ''} ${file ? 'ic-dropzone--filled' : ''}`}
-                  onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
-                  onDragLeave={() => setDrag(false)}
-                  onDrop={handleDrop}
-                  onClick={() => !file && fileInputRef.current?.click()}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => e.key === 'Enter' && !file && fileInputRef.current?.click()}
-                  aria-label="Upload PDF"
-                >
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="application/pdf"
-                    className="ic-dropzone__input"
-                    onChange={(e) => acceptFile(e.target.files[0])}
-                  />
-
-                  {!file ? (
-                    <div className="ic-dropzone__empty">
-                      <span className="ic-dropzone__icon"><UploadIcon /></span>
-                      <p className="ic-dropzone__prompt">
-                        Drag and drop a PDF here, or <span className="ic-dropzone__link">browse</span>
-                      </p>
-                      <p className="ic-dropzone__hint">PDF only · max 10 MB</p>
+                  <div className="ic-summary">
+                    <div className="ic-summary__section">
+                      <span className="ic-summary__section-title label">Student</span>
+                      <SummaryRow label="Full name" value={form.full_name} />
+                      <SummaryRow label="Matricule" value={form.matricule} mono />
+                      <SummaryRow label="Email" value={form.email} />
                     </div>
-                  ) : (
-                    <div className="ic-dropzone__preview">
-                      <span className="ic-dropzone__file-icon"><FileIcon /></span>
-                      <div className="ic-dropzone__file-info">
-                        <span className="ic-dropzone__file-name">{file.name}</span>
-                        <span className="ic-dropzone__file-size text-muted">
-                          {(file.size / 1024).toFixed(1)} KB
+
+                    <div className="ic-summary__section">
+                      <span className="ic-summary__section-title label">Academic record</span>
+                      <SummaryRow label="Department" value={form.department} />
+                      <SummaryRow label="Program" value={form.program} />
+                      <SummaryRow label="Year of entry" value={form.year_of_entry} />
+                      <SummaryRow label="Year of graduation" value={form.year_of_graduation} />
+                      <SummaryRow label="GPA" value={form.gpa} />
+                    </div>
+
+                    <div className="ic-summary__section">
+                      <span className="ic-summary__section-title label">Certificate file</span>
+                      <div className="ic-summary__row">
+                        <span className="ic-summary__key label">File</span>
+                        <span className="ic-summary__val ic-summary__file">
+                          <FileIcon />
+                          <span>{file?.name}</span>
+                          <a
+                            href={file ? URL.createObjectURL(file) : '#'}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="ic-link"
+                          >
+                            Preview
+                          </a>
                         </span>
                       </div>
-                      <div className="ic-dropzone__actions">
-                        <a
-                          href={URL.createObjectURL(file)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="ic-link"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          Preview
-                        </a>
-                        <button
-                          className="ic-btn ic-btn--ghost ic-btn--sm"
-                          onClick={(e) => { e.stopPropagation(); setFile(null); }}
-                        >
-                          Remove
-                        </button>
-                      </div>
+                    </div>
+                  </div>
+
+                  {/* Warning banner if blockchain pending */}
+                  {toast?.type === 'warning' && (
+                    <div className="ic-banner ic-banner--warning" role="alert">
+                      <WarningIcon />
+                      <p>{toast.message}</p>
                     </div>
                   )}
                 </div>
-
-                {fileErr && (
-                  <p className="ic-field__error ic-field__error--standalone">{fileErr}</p>
-                )}
-              </div>
-            )}
-
-            {/* ── Step 3 ── */}
-            {step === 3 && (
-              <div className="ic-pane" key="step3">
-                <h2 className="ic-pane__title">Confirm & issue</h2>
-                <p className="ic-pane__sub">Review all details before issuing. This action cannot be undone.</p>
-
-                <div className="ic-summary">
-                  <div className="ic-summary__section">
-                    <span className="ic-summary__section-title label">Student</span>
-                    <SummaryRow label="Full name" value={form.full_name} />
-                    <SummaryRow label="Matricule" value={form.matricule} mono />
-                    <SummaryRow label="Email" value={form.email} />
-                  </div>
-
-                  <div className="ic-summary__section">
-                    <span className="ic-summary__section-title label">Academic record</span>
-                    <SummaryRow label="Department" value={form.department} />
-                    <SummaryRow label="Program" value={form.program} />
-                    <SummaryRow label="Year of entry" value={form.year_of_entry} />
-                    <SummaryRow label="Year of graduation" value={form.year_of_graduation} />
-                    <SummaryRow label="GPA" value={form.gpa} />
-                  </div>
-
-                  <div className="ic-summary__section">
-                    <span className="ic-summary__section-title label">Certificate file</span>
-                    <div className="ic-summary__row">
-                      <span className="ic-summary__key label">File</span>
-                      <span className="ic-summary__val ic-summary__file">
-                        <FileIcon />
-                        <span>{file?.name}</span>
-                        <a
-                          href={file ? URL.createObjectURL(file) : '#'}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="ic-link"
-                        >
-                          Preview
-                        </a>
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Warning banner if blockchain pending */}
-                {toast?.type === 'warning' && (
-                  <div className="ic-banner ic-banner--warning" role="alert">
-                    <WarningIcon />
-                    <p>{toast.message}</p>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* ── Footer nav ── */}
-          <div className="ic-footer">
-            <div className="ic-footer__left">
-              {step > 1 && (
-                <button className="ic-btn ic-btn--secondary" onClick={goBack} disabled={loading}>
-                  Back
-                </button>
               )}
             </div>
-            <div className="ic-footer__right">
-              {step < TOTAL_STEPS && (
-                <button className="ic-btn ic-btn--primary" onClick={goNext}>
-                  Continue
-                </button>
-              )}
-              {step === TOTAL_STEPS && (
-                <button
-                  className="ic-btn ic-btn--primary"
-                  onClick={handleSubmit}
-                  disabled={loading}
-                >
-                  {loading ? <><Spinner /> Issuing…</> : 'Issue certificate'}
-                </button>
-              )}
+
+            {/* ── Footer nav ── */}
+            <div className="ic-footer">
+              <div className="ic-footer__left">
+                {step > 1 && (
+                  <button className="ic-btn ic-btn--secondary" onClick={goBack} disabled={loading}>
+                    Back
+                  </button>
+                )}
+              </div>
+              <div className="ic-footer__right">
+                {step < TOTAL_STEPS && (
+                  <button className="ic-btn ic-btn--primary" onClick={goNext}>
+                    Continue
+                  </button>
+                )}
+                {step === TOTAL_STEPS && (
+                  <button
+                    className="ic-btn ic-btn--primary"
+                    onClick={handleSubmit}
+                    disabled={loading}
+                  >
+                    {loading ? <><Spinner /> Issuing…</> : 'Issue certificate'}
+                  </button>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-        {/* Toast */}
-        {toast && (
-          <div className={`ic-toast ic-toast--${toast.type}`} role="alert">
-            <span className="ic-toast__icon">
-              {toast.type === 'success' && <SuccessIcon />}
-              {toast.type === 'warning' && <WarningIcon />}
-              {toast.type === 'error' && <WarningIcon />}
-            </span>
-            <span className="ic-toast__msg">{toast.message}</span>
-            <button className="ic-toast__close" onClick={() => setToast(null)} aria-label="Dismiss">×</button>
-          </div>
-        )}
+          {/* Toast */}
+          {toast && (
+            <div className={`ic-toast ic-toast--${toast.type}`} role="alert">
+              <span className="ic-toast__icon">
+                {toast.type === 'success' && <SuccessIcon />}
+                {toast.type === 'warning' && <WarningIcon />}
+                {toast.type === 'error' && <WarningIcon />}
+              </span>
+              <span className="ic-toast__msg">{toast.message}</span>
+              <button className="ic-toast__close" onClick={() => setToast(null)} aria-label="Dismiss">×</button>
+            </div>
+          )}
         </div>
       </div>
     </div>

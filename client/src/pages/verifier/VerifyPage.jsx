@@ -484,7 +484,7 @@ export default function VerifyPage() {
         <div className="vp-topbar">
           <div className="vp-logo">
             <span className="vp-logo__mark">⬡</span>
-            <span className="vp-logo__text">Block-Ledger</span>
+            <span className="vp-logo__text">Grad-Ledger</span>
           </div>
           <span className="vp-header__tag">Certificate verification</span>
         </div>

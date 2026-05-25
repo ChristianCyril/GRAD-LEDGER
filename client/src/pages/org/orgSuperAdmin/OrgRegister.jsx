@@ -335,11 +335,16 @@ export default function OrgRegister() {
       <div className="reg-topbar">
         <div className="reg-logo">
           <span className="reg-logo__mark">⬡</span>
-          <span className="reg-logo__text">Block-Ledger</span>
+          <span className="reg-logo__text">Grad-Ledger</span>
         </div>
-        <Link to="/org-login" className="reg-topbar__link">
-          Already registered? Sign in
-        </Link>
+        <div className="reg-topbar__actions">
+         <Link to="/" className="reg-topbar__link">
+           Home
+          </Link>
+          <Link to="/org-login" className="reg-topbar__link">
+            Already registered? Sign in
+          </Link>
+        </div>
       </div>
 
       <div className="reg-body">
@@ -348,7 +353,7 @@ export default function OrgRegister() {
         <aside className="reg-aside">
           <div className="reg-aside__inner">
             <h2 className="reg-aside__title">
-              Join Block-Ledger
+              Join Grad-Ledger
             </h2>
             <p className="reg-aside__sub">
               Register your institution to start issuing tamper-proof
@@ -376,7 +381,7 @@ export default function OrgRegister() {
                 <circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.3" />
                 <path d="M8 7v4M8 5h.01" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
               </svg>
-              Registration is reviewed by a Block-Ledger administrator.
+              Registration is reviewed by a Grad-Ledger administrator.
               You will receive an email once your organisation is approved.
             </div>
           </div>
@@ -582,7 +587,7 @@ export default function OrgRegister() {
                   <FileDropzone
                     id="doc_letter_of_intent"
                     label="Letter of intent"
-                    hint="Signed letter stating your institution's intent to use Block-Ledger"
+                    hint="Signed letter stating your institution's intent to use Grad-Ledger"
                     file={form.doc_letter_of_intent}
                     onChange={(f) => setField('doc_letter_of_intent', f)}
                     disabled={loading}
@@ -620,7 +625,7 @@ export default function OrgRegister() {
                     <span className="reg-checkbox__box" aria-hidden="true" />
                     <span className="reg-checkbox__label">
                       I confirm that the information provided is accurate and that I am
-                      authorised to register this organisation on Block-Ledger. I agree to the{' '}
+                      authorised to register this organisation on Grad-Ledger. I agree to the{' '}
                       <a href="/terms" target="_blank" rel="noopener noreferrer">
                         Terms of Service
                       </a>{' '}

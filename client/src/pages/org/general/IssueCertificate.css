@@ -22,16 +22,22 @@
 /* ─── Page wrapper ───────────────────────────────────── */
 
 .ic-page {
-  max-width: 760px;
+  width: 100%;
   margin: 0 auto;
   padding: var(--space-xl) var(--space-base);
   display: flex;
   flex-direction: column;
   gap: var(--space-lg);
+  transition: padding-right var(--transition-base);
 }
 
 /* ─── Page header ────────────────────────────────────── */
-
+.ic-header{
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  margin-left: 12px;
+}
 .ic-header__eyebrow {
   color: var(--color-primary);
   margin-bottom: var(--space-xs);
@@ -57,6 +63,8 @@
   border: 0.5px solid var(--border-default);
   border-radius: var(--radius-lg);
   overflow: hidden;
+  max-width: 760px;
+  margin-left: 150px;
 }
 
 /* ─── Step indicator ─────────────────────────────────── */
@@ -613,6 +621,9 @@
 @media (max-width: 640px) {
   .ic-page {
     padding: var(--space-base);
+  }
+  .ic-main{
+    margin-left: 0px;
   }
 
   .ic-steps {

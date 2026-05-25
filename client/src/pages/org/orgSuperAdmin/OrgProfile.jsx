@@ -448,7 +448,10 @@ export default function OrgProfile() {
 
       <div className="op-page__main">
         <Header org={org} user={user} setSidebarOpen={setSidebarOpen} />
-
+        <header className="op-header">
+          <div className="op-header__eyebrow label">Organisation</div>
+          <h1 className="op-header__title">Update Organisation Profile</h1>
+        </header>
         <div className="op-content">
 
           {error && (

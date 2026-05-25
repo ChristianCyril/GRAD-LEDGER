@@ -51,7 +51,7 @@ export default function ResetPassword() {
         <div className="auth-card">
           <div className="auth-logo">
             <span className="auth-logo__mark">⬡</span>
-            <span className="auth-logo__text">CertChain</span>
+            <span className="auth-logo__text">Grad-Ledger</span>
           </div>
           <div className="auth-invalid">
             <div className="auth-invalid__icon" aria-hidden="true">
@@ -132,7 +132,7 @@ export default function ResetPassword() {
         <div className="auth-card">
           <div className="auth-logo">
             <span className="auth-logo__mark">⬡</span>
-            <span className="auth-logo__text">CertChain</span>
+            <span className="auth-logo__text">Grad-Ledger</span>
           </div>
           <div className="auth-success">
             <div className="auth-success__icon" aria-hidden="true">
@@ -165,7 +165,7 @@ export default function ResetPassword() {
         {/* Logo */}
         <div className="auth-logo">
           <span className="auth-logo__mark">⬡</span>
-          <span className="auth-logo__text">CertChain</span>
+          <span className="auth-logo__text">Grad-Ledger</span>
         </div>
 
         <div className="auth-card__header">

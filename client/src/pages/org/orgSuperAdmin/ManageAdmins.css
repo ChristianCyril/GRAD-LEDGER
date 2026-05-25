@@ -41,6 +41,12 @@
   flex-wrap: wrap;
 }
 
+.ma-header__eyebrow {
+  color: var(--color-primary);
+  margin-bottom: var(--space-xs);
+}
+
+
 .ma-header__title {
   font-size: 22px;
   font-weight: 500;

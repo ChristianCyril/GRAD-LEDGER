@@ -56,7 +56,7 @@ return (
       <div className="sa-topbar">
         <div className="sa-logo">
           <span className="sa-logo__mark">⬡</span>
-          <span className="sa-logo__text">CertChain</span>
+          <span className="sa-logo__text">Grad-Ledger</span>
         </div>
         <span className="sa-topbar__badge">Platform administration</span>
       </div>
@@ -103,7 +103,7 @@ return (
                 name="email"
                 type="email"
                 className="field__input"
-                placeholder="admin@certchain.com"
+                placeholder="admin@gradledger.com"
                 value={form.email}
                 onChange={handleChange}
                 autoComplete="email"

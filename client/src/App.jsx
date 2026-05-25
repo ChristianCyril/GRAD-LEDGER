@@ -20,6 +20,7 @@ import IssueCertificate from "./pages/org/general/IssueCertificate";
 import CertificatesList from "./pages/org/general/CertificatesList";
 import AuditLog from "./pages/org/general/AuditLog";
 import VerifyPage from "./pages/verifier/VerifyPage";
+import ChangePassword from "./pages/ChangePassword";
 
 export default function App() {
   return (
@@ -47,6 +48,7 @@ export default function App() {
           <Route path='/org/certificates/issue' element={<IssueCertificate />} />
           <Route path='org/certificates' element={<CertificatesList />} />
           <Route path='/org/audit' element={<AuditLog/>} />
+          <Route path='/org/change-password' element={<ChangePassword/>} />
         </Route>
 
         <Route element={<ProtectedRoute roles={['SUPER_ADMIN']} />}>

@@ -98,7 +98,7 @@ export default function SuperAdminSidebar({ open, onClose, pendingCount = 0 }) {
         {/* Logo */}
         <div className="sa-sidebar__logo">
           <span className="sa-sidebar__logo-mark">⬡</span>
-          <span className="sa-sidebar__logo-text">Block-Ledger</span>
+          <span className="sa-sidebar__logo-text">Grad-Ledger</span>
           <button
             className="sa-sidebar__close"
             onClick={onClose}

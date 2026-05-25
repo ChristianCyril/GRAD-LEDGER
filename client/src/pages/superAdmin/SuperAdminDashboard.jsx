@@ -197,7 +197,7 @@ export default function SuperAdminDashboard() {
 
           <div className="sa-dashboard__topbar-logo">
             <span style={{ color: 'var(--teal-400)', fontSize: 18 }}>⬡</span>
-            <span className="sa-dashboard__topbar-name">Block-Ledger</span>
+            <span className="sa-dashboard__topbar-name">Grad-Ledger</span>
           </div>
 
           <div className="sa-dashboard__topbar-right">

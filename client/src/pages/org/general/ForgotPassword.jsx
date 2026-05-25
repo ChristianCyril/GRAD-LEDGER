@@ -36,7 +36,7 @@ export default function ForgotPassword() {
         {/* Logo */}
         <div className="auth-logo">
           <span className="auth-logo__mark">⬡</span>
-          <span className="auth-logo__text">CertChain</span>
+          <span className="auth-logo__text">Grad-Ledger</span>
         </div>
 
         {submitted ? (

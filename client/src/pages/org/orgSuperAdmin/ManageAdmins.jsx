@@ -405,6 +405,7 @@ export default function ManageAdmins() {
         <div className="ma-content">
 
           {/* Page header */}
+          <div className="ma-header__eyebrow label">ORGANISATION</div>
           <div className="ma-header">
             <div className="ma-header__left">
               <h1 className="ma-header__title">Admin accounts</h1>
