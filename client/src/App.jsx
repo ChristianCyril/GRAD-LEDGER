@@ -19,6 +19,7 @@ import OrgProfile from "./pages/org/orgSuperAdmin/OrgProfile";
 import IssueCertificate from "./pages/org/general/IssueCertificate";
 import CertificatesList from "./pages/org/general/CertificatesList";
 import AuditLog from "./pages/org/general/AuditLog";
+import VerifyPage from "./pages/verifier/VerifyPage";
 
 export default function App() {
   return (
@@ -29,6 +30,7 @@ export default function App() {
       <Route path='/forgot-password' element={<ForgotPassword />} />
       <Route path='/reset-password' element={<ResetPassword />} />
       <Route path='/org-registration' element={<OrgRegister/>} />
+      <Route path='/verify' element={<VerifyPage/>} />
 
       <Route element={<PersistLogin />}>
         <Route element={<ProtectedRoute roles={['ORG_SUPER_ADMIN']} />}>

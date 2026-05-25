@@ -116,3 +116,9 @@
   justify-content: center;
   flex-shrink: 0;
 }
+
+@media (min-width: 768px) {
+ .osa-topbar__right,.osa-topbar__org{
+  display: none;
+ }
+}
