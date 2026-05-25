@@ -61,15 +61,15 @@ const resolveCertificate = async (certId) => {
 };
 
 
-export const verifyByHash = async (req, res) => {
+export const verifyById = async (req, res) => {
   try {
-    const { certId } = req.params;
-
-    if (!certId || certId.trim() === '') {
+    const { id } = req.params;
+    
+    if (!id || id.trim() === '') {
       return res.status(400).json({ message: 'Certificate ID is required' });
     }
 
-    const result = await resolveCertificate(certId.trim());
+    const result = await resolveCertificate(id.trim());
     return res.status(200).json(result);
   } catch (err) {
     console.error('[verifyByHash]', err);

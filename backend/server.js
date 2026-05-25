@@ -9,6 +9,7 @@ import superAdminRoutes from './routes/superAdminRoutes.js'
 import orgSuperAdminRoutes from './routes/orgSuperAdminRoutes.js'
 import certificateRoutes from './routes/certificateRoutes.js'
 import auditRoutes from './routes/auditRoutes.js'
+import verificationRoutes from './routes/verificationRoute.js'
 
 
 const app = express();
@@ -25,6 +26,7 @@ app.use('/api/super-admin',superAdminRoutes)
 app.use('/api/org-super-admin',orgSuperAdminRoutes)
 app.use('/api/certificates',certificateRoutes)
 app.use('/api/audit',auditRoutes)
+app.use('/api/verify',verificationRoutes)
 
 app.listen(PORT,()=>{
   console.log(`GRAD-LEDGER Server running on pot ${PORT}`)
