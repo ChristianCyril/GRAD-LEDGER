@@ -323,18 +323,6 @@ export default function SuperAdminDashboard() {
                     </svg>
                   ),
                 },
-                {
-                  label: 'Analytics',
-                  desc: 'View platform growth and metrics',
-                  to: '/super-admin/analytics',
-                  accent: 'var(--blue-400)',
-                  bg: 'var(--blue-50)',
-                  icon: (
-                    <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
-                      <path d="M1 12l4-4 3 3 4-5 3 2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  ),
-                },
               ].map((action) => (
                 <button
                   key={action.label}

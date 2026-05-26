@@ -157,6 +157,7 @@ export const issueCertificate = async (req, res) => {
     });
 
     if (duplicateHash) {
+      fs.unlinkSync(req.file.path);
       return res.status(409).json({
         message: 'This PDF has already been issued as a certificate'
       });
@@ -180,6 +181,7 @@ export const issueCertificate = async (req, res) => {
       
       // Check if it's a network error
       if (cloudinaryErr.code === 'EAI_AGAIN' || cloudinaryErr.code === 'ENOTFOUND') {
+        fs.unlinkSync(req.file.path);
         return res.status(503).json({
           message: 'Cloudinary service is currently unavailable. Please check your network connection and Cloudinary credentials.',
           error: cloudinaryErr.message,

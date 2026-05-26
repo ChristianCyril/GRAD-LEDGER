@@ -56,20 +56,6 @@ const NAV_ITEMS = [
       },
     ],
   },
-  {
-    group: 'Platform',
-    items: [
-      {
-        to: '/super-admin/analytics',
-        label: 'Analytics',
-        icon: (
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-            <path d="M1 12l4-4 3 3 4-5 3 2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        ),
-      },
-    ],
-  },
 ];
 
 export default function SuperAdminSidebar({ open, onClose, pendingCount = 0 }) {

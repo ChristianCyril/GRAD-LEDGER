@@ -24,16 +24,10 @@ export default function Header({org,user,setSidebarOpen}){
           </div>
 
           <div className="osa-topbar__right">
-            <span className="osa-role-badge">Org Super Admin</span>
-            <div className="osa-topbar__avatar" aria-label={user?.full_name}>
-              {user?.full_name
-                ?.split(' ')
-                .filter(Boolean)
-                .slice(0, 2)
-                .map((n) => n[0].toUpperCase())
-                .join('') ?? 'U'
-              }
-            </div>
+           <div className="hp-logo">
+            <span className="hp-logo__mark">⬡</span>   {/*styles for these block of components found in footer unrestricted*/}
+            <span className="hp-logo__text">Grad-Ledger</span>
+          </div>
           </div>
         </header>)
 

@@ -45,15 +45,15 @@ jest.unstable_mockModule('../../config/cloudinary.js', () => ({
 // IMPORTS AFTER MOCKS
 // ─────────────────────────────────────────────────────────────────────────────
 
-const { default: request }      = await import('supertest');
-const { default: bcrypt }       = await import('bcrypt');
-const { default: express }      = await import('express');
-const { default: cors }         = await import('cors');
+const { default: request } = await import('supertest');
+const { default: bcrypt } = await import('bcrypt');
+const { default: express } = await import('express');
+const { default: cors } = await import('cors');
 const { default: cookieParser } = await import('cookie-parser');
 
-const { getPrismaClient }       = await import('../prisma.singleton.js');
-const { signAccessToken }       = await import('../../service/jwtServices.js');
-const { default: corsOption }   = await import('../../config/corsOption.js');
+const { getPrismaClient } = await import('../prisma.singleton.js');
+const { signAccessToken } = await import('../../service/jwtServices.js');
+const { default: corsOption } = await import('../../config/corsOption.js');
 const { default: certificateRoutes } = await import('../../routes/certificateRoutes.js');
 
 const prisma = getPrismaClient();
@@ -97,14 +97,14 @@ const txtPath = path.resolve('test', 'fixtures', 'not-pdf.txt');
 // ─────────────────────────────────────────────────────────────────────────────
 
 const createPayload = () => ({
-  full_name:          'John Doe',
-  matricule:          `MAT-${Date.now()}`,
-  email:              `john${Date.now()}@gmail.com`,
-  department:         'Computer Engineering',
-  program:            'Software Engineering',
-  year_of_entry:      '2020',
+  full_name: 'John Doe',
+  matricule: `MAT-${Date.now()}`,
+  email: `john${Date.now()}@gmail.com`,
+  department: 'Computer Engineering',
+  program: 'Software Engineering',
+  year_of_entry: '2020',
   year_of_graduation: '2024',
-  gpa:                '3.8'
+  gpa: '3.8'
 });
 // Creates a unique fake PDF with a timestamp so each test gets a unique hash
 const createUniquePdfPath = () => {
@@ -118,37 +118,32 @@ const createUniquePdfPath = () => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 beforeAll(async () => {
-  // Ensure uploads directory exists for multer diskStorage
-  if (!fs.existsSync('uploads')) {
-    fs.mkdirSync('uploads', { recursive: true });
-  }
-
   const hashedPassword = await bcrypt.hash('password123', 10);
 
   org = await prisma.organisation.create({
     data: {
-      name:           'Test University',
-      code:           `TU-${Date.now()}`,
-      type:           'UNIVERSITY',
-      country:        'Cameroon',
-      city:           'Yaounde',
+      name: 'Test University',
+      code: `TU-${Date.now()}`,
+      type: 'UNIVERSITY',
+      country: 'Cameroon',
+      city: 'Yaounde',
       official_email: `org${Date.now()}@gmail.com`,
-      phone:          '677000000',
-      address:        'Test Address',
-      status:         'APPROVED'
+      phone: '677000000',
+      address: 'Test Address',
+      status: 'APPROVED'
     }
   });
 
   superAdmin = await prisma.orgUser.create({
     data: {
-      org_id:           org.id,
-      role:             'ORG_SUPER_ADMIN',
-      full_name:        'Super Admin',
-      job_title:        'Registrar',
-      email:            `admin${Date.now()}@gmail.com`,
-      phone:            '677111111',
-      password_hash:    hashedPassword,
-      status:           'ACTIVE',
+      org_id: org.id,
+      role: 'ORG_SUPER_ADMIN',
+      full_name: 'Super Admin',
+      job_title: 'Registrar',
+      email: `admin${Date.now()}@gmail.com`,
+      phone: '677111111',
+      password_hash: hashedPassword,
+      status: 'ACTIVE',
       reg_email_status: 'SENT'
     }
   });
@@ -156,8 +151,8 @@ beforeAll(async () => {
   // ✅ Use 'userId' to match what authenticate middleware reads (decoded.userId)
   orgSuperAdminToken = signAccessToken({
     userId: superAdmin.id,
-    orgId:  org.id,
-    role:   superAdmin.role
+    orgId: org.id,
+    role: superAdmin.role
   });
 
   // Ensure fixture directory exists
@@ -166,7 +161,7 @@ beforeAll(async () => {
     fs.mkdirSync(fixtureDir, { recursive: true });
   }
 
- 
+
   // Create fake TXT file if missing
   if (!fs.existsSync(txtPath)) {
     fs.writeFileSync(txtPath, 'this is not a pdf');
@@ -181,15 +176,34 @@ beforeAll(async () => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 afterAll(async () => {
-  // Clean up uploads directory
-  if (fs.existsSync('uploads')) {
-    fs.rmSync('uploads', { recursive: true, force: true });
-  }
+
   // Clean up any unique pdf fixtures generated during tests
   const fixtureDir = path.resolve('test', 'fixtures');
   fs.readdirSync(fixtureDir)
     .filter(f => f.startsWith('sample-') && f.endsWith('.pdf'))
     .forEach(f => fs.unlinkSync(path.join(fixtureDir, f)));
+
+  try {
+    const uploadsDir = path.resolve('uploads');
+
+    if (fs.existsSync(uploadsDir)) {
+      const files = fs.readdirSync(uploadsDir);
+
+      for (const file of files) {
+        // Construct absolute path to the file
+        const filePath = path.join(uploadsDir, file);
+
+        // Ensure it's a file before trying to delete it
+        if (fs.statSync(filePath).isFile()) {
+          fs.unlinkSync(filePath);
+        }
+      }
+    }
+  } catch (error) {
+    // Uses structural fallback to avoid breaking test teardown logs
+    console.warn('Failed to clean up uploads directory:', error.message);
+  }
+
 
   // Clean up database data (in reverse order of foreign key dependencies)
   try {
@@ -210,9 +224,9 @@ beforeEach(() => {
 
   mockGenerateQRCode.mockResolvedValue('data:image/png;base64,fakeqr');
   mockSendCertificateIssuedEmail.mockResolvedValue(undefined);
-  
+
   // Suppress console.error during tests (to reduce noise from intentional error handling tests)
-  jest.spyOn(console, 'error').mockImplementation(() => {});
+  jest.spyOn(console, 'error').mockImplementation(() => { });
 });
 
 afterEach(() => {
@@ -275,14 +289,14 @@ describe('Certificate Issuance Integration Tests', () => {
       const response = await request(app)
         .post('/api/certificates')
         .set('Authorization', `Bearer ${orgSuperAdminToken}`)
-        .field('full_name',          payload.full_name)
-        .field('matricule',          payload.matricule)
-        .field('email',              payload.email)
-        .field('department',         payload.department)
-        .field('program',            payload.program)
-        .field('year_of_entry',      payload.year_of_entry)
+        .field('full_name', payload.full_name)
+        .field('matricule', payload.matricule)
+        .field('email', payload.email)
+        .field('department', payload.department)
+        .field('program', payload.program)
+        .field('year_of_entry', payload.year_of_entry)
         .field('year_of_graduation', payload.year_of_graduation)
-        .field('gpa',                payload.gpa)
+        .field('gpa', payload.gpa)
         .attach('certificate_pdf', uniquePdf);
 
       expect(response.status).toBe(202);
@@ -308,13 +322,13 @@ describe('Certificate Issuance Integration Tests', () => {
       const response = await request(app)
         .post('/api/certificates')
         .set('Authorization', `Bearer ${orgSuperAdminToken}`)
-        .field('matricule',          'MAT-001')
-        .field('email',              'test@gmail.com')
-        .field('department',         'Engineering')
-        .field('program',            'Software Engineering')
-        .field('year_of_entry',      '2020')
+        .field('matricule', 'MAT-001')
+        .field('email', 'test@gmail.com')
+        .field('department', 'Engineering')
+        .field('program', 'Software Engineering')
+        .field('year_of_entry', '2020')
         .field('year_of_graduation', '2024')
-        .field('gpa',                '3.5')
+        .field('gpa', '3.5')
         .attach('certificate_pdf', uniquePdf);
 
       expect(response.status).toBe(400);
@@ -328,15 +342,15 @@ describe('Certificate Issuance Integration Tests', () => {
       const response = await request(app)
         .post('/api/certificates')
         .set('Authorization', `Bearer ${orgSuperAdminToken}`)
-        .field('full_name',          payload.full_name)
-        .field('matricule',          payload.matricule)
-        .field('email',              payload.email)
-        .field('department',         payload.department)
-        .field('program',            payload.program)
-        .field('year_of_entry',      payload.year_of_entry)
+        .field('full_name', payload.full_name)
+        .field('matricule', payload.matricule)
+        .field('email', payload.email)
+        .field('department', payload.department)
+        .field('program', payload.program)
+        .field('year_of_entry', payload.year_of_entry)
         .field('year_of_graduation', payload.year_of_graduation)
-        .field('gpa',                payload.gpa)
-        .attach('certificate_pdf',   txtPath);
+        .field('gpa', payload.gpa)
+        .attach('certificate_pdf', txtPath);
 
       expect(response.status).toBe(400);
       expect(response.body.message).toContain('must be a PDF');
@@ -355,26 +369,26 @@ describe('Certificate Issuance Integration Tests', () => {
       if (!failedCertificateId) {
         const student = await prisma.student.create({
           data: {
-            org_id:    org.id,
+            org_id: org.id,
             full_name: 'Retry Student',
             matricule: `RET-${Date.now()}`,
-            email:     `retry${Date.now()}@gmail.com`
+            email: `retry${Date.now()}@gmail.com`
           }
         });
 
         const failedCert = await prisma.certificate.create({
           data: {
-            org_id:             org.id,
-            student_id:         student.id,
-            issued_by_id:       superAdmin.id,
-            department:         'Engineering',
-            program:            'Computer Science',
-            year_of_entry:      2020,
+            org_id: org.id,
+            student_id: student.id,
+            issued_by_id: superAdmin.id,
+            department: 'Engineering',
+            program: 'Computer Science',
+            year_of_entry: 2020,
             year_of_graduation: 2024,
-            gpa:                3.5,
-            certificate_hash:   `retry-hash-${Date.now()}`,
-            cloudinary_url:     'https://fake-url.com/cert.pdf',
-            status:             'FAILED'
+            gpa: 3.5,
+            certificate_hash: `retry-hash-${Date.now()}`,
+            cloudinary_url: 'https://fake-url.com/cert.pdf',
+            status: 'FAILED'
           }
         });
 
@@ -413,41 +427,41 @@ describe('Certificate Issuance Integration Tests', () => {
 
       const secondAdmin = await prisma.orgUser.create({
         data: {
-          org_id:           org.id,
-          role:             'ORG_ADMIN',
-          full_name:        'Second Admin',
-          job_title:        'Dean',
-          email:            `second${Date.now()}@gmail.com`,
-          phone:            '677222222',
-          password_hash:    hashedPassword,
-          status:           'ACTIVE',
+          org_id: org.id,
+          role: 'ORG_ADMIN',
+          full_name: 'Second Admin',
+          job_title: 'Dean',
+          email: `second${Date.now()}@gmail.com`,
+          phone: '677222222',
+          password_hash: hashedPassword,
+          status: 'ACTIVE',
           reg_email_status: 'SENT'
         }
       });
 
       const student = await prisma.student.create({
         data: {
-          org_id:    org.id,
+          org_id: org.id,
           full_name: 'Another Student',
           matricule: `MAT-${Date.now()}`,
-          email:     `student${Date.now()}@gmail.com`
+          email: `student${Date.now()}@gmail.com`
         }
       });
 
       await prisma.certificate.create({
         data: {
-          id:                 crypto.randomUUID(),
-          org_id:             org.id,
-          student_id:         student.id,
-          issued_by_id:       secondAdmin.id,
-          department:         'Engineering',
-          program:            `Cyber Security ${Date.now()}`,
-          year_of_entry:      2020,
+          id: crypto.randomUUID(),
+          org_id: org.id,
+          student_id: student.id,
+          issued_by_id: secondAdmin.id,
+          department: 'Engineering',
+          program: `Cyber Security ${Date.now()}`,
+          year_of_entry: 2020,
           year_of_graduation: 2024,
-          gpa:                3.7,
-          certificate_hash:   `hash-${Date.now()}`,
-          cloudinary_url:     'https://fake-url.com/cert.pdf',
-          status:             'CONFIRMED'
+          gpa: 3.7,
+          certificate_hash: `hash-${Date.now()}`,
+          cloudinary_url: 'https://fake-url.com/cert.pdf',
+          status: 'CONFIRMED'
         }
       });
 

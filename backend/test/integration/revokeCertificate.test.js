@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 dotenv.config({ path: '.env.test' });
-import fs   from 'fs';
+import fs from 'fs';
 import path from 'path';
 import { jest } from '@jest/globals';
 
@@ -10,15 +10,15 @@ jest.setTimeout(15000);
 // MOCKS
 // ─────────────────────────────────────────────────────────────────────────────
 
-const mockIssueOnChain        = jest.fn();
-const mockRevokeOnChain       = jest.fn();
-const mockVerifyOnChain       = jest.fn();
-const mockGenerateQRCode      = jest.fn();
+const mockIssueOnChain = jest.fn();
+const mockRevokeOnChain = jest.fn();
+const mockVerifyOnChain = jest.fn();
+const mockGenerateQRCode = jest.fn();
 const mockSendCertificateIssuedEmail = jest.fn();
 const mockSendRevocationEmail = jest.fn();
 
 jest.unstable_mockModule('../../service/blockchainService.js', () => ({
-  issueOnChain:  mockIssueOnChain,
+  issueOnChain: mockIssueOnChain,
   revokeOnChain: mockRevokeOnChain,
   verifyOnChain: mockVerifyOnChain,
 }));
@@ -29,7 +29,7 @@ jest.unstable_mockModule('../../service/qrService.js', () => ({
 
 jest.unstable_mockModule('../../service/emailService.js', () => ({
   sendCertificateIssuedEmail: mockSendCertificateIssuedEmail,
-  sendRevocationEmail:        mockSendRevocationEmail,
+  sendRevocationEmail: mockSendRevocationEmail,
 }));
 
 jest.unstable_mockModule('../../config/cloudinary.js', () => ({
@@ -46,15 +46,15 @@ jest.unstable_mockModule('../../config/cloudinary.js', () => ({
 // IMPORTS AFTER MOCKS
 // ─────────────────────────────────────────────────────────────────────────────
 
-const { default: request }      = await import('supertest');
-const { default: bcrypt }       = await import('bcrypt');
-const { default: express }      = await import('express');
-const { default: cors }         = await import('cors');
+const { default: request } = await import('supertest');
+const { default: bcrypt } = await import('bcrypt');
+const { default: express } = await import('express');
+const { default: cors } = await import('cors');
 const { default: cookieParser } = await import('cookie-parser');
 
-const { getPrismaClient }            = await import('../prisma.singleton.js');
-const { signAccessToken }            = await import('../../service/jwtServices.js');
-const { default: corsOption }        = await import('../../config/corsOption.js');
+const { getPrismaClient } = await import('../prisma.singleton.js');
+const { signAccessToken } = await import('../../service/jwtServices.js');
+const { default: corsOption } = await import('../../config/corsOption.js');
 const { default: certificateRoutes } = await import('../../routes/certificateRoutes.js');
 
 const prisma = getPrismaClient();
@@ -110,10 +110,6 @@ const createUniquePdfPath = () => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 beforeAll(async () => {
-  // Ensure directories exist
-  if (!fs.existsSync('uploads')) {
-    fs.mkdirSync('uploads', { recursive: true });
-  }
 
   const fixtureDir = path.resolve('test', 'fixtures');
   if (!fs.existsSync(fixtureDir)) {
@@ -128,36 +124,36 @@ beforeAll(async () => {
 
   org = await prisma.organisation.create({
     data: {
-      name:           'Revocation Test University',
-      code:           `RTU-${Date.now()}`,
-      type:           'UNIVERSITY',
-      country:        'Cameroon',
-      city:           'Yaounde',
+      name: 'Revocation Test University',
+      code: `RTU-${Date.now()}`,
+      type: 'UNIVERSITY',
+      country: 'Cameroon',
+      city: 'Yaounde',
       official_email: `revoke-org${Date.now()}@gmail.com`,
-      phone:          '677000001',
-      address:        'Test Address',
-      status:         'APPROVED'
+      phone: '677000001',
+      address: 'Test Address',
+      status: 'APPROVED'
     }
   });
 
   superAdmin = await prisma.orgUser.create({
     data: {
-      org_id:           org.id,
-      role:             'ORG_SUPER_ADMIN',
-      full_name:        'Revoke Admin',
-      job_title:        'Registrar',
-      email:            `revoke-admin${Date.now()}@gmail.com`,
-      phone:            '677111112',
-      password_hash:    hashedPassword,
-      status:           'ACTIVE',
+      org_id: org.id,
+      role: 'ORG_SUPER_ADMIN',
+      full_name: 'Revoke Admin',
+      job_title: 'Registrar',
+      email: `revoke-admin${Date.now()}@gmail.com`,
+      phone: '677111112',
+      password_hash: hashedPassword,
+      status: 'ACTIVE',
       reg_email_status: 'SENT'
     }
   });
 
   orgSuperAdminToken = signAccessToken({
     userId: superAdmin.id,
-    orgId:  org.id,
-    role:   superAdmin.role
+    orgId: org.id,
+    role: superAdmin.role
   });
 
   // ── Issue a certificate that will be used across revocation tests ──────────
@@ -170,15 +166,15 @@ beforeAll(async () => {
   const response = await request(app)
     .post('/api/certificates')
     .set('Authorization', `Bearer ${orgSuperAdminToken}`)
-    .field('full_name',          'Jane Smith')
-    .field('matricule',          `MAT-REV-${Date.now()}`)
-    .field('email',              `jane${Date.now()}@gmail.com`)
-    .field('department',         'Law')
-    .field('program',            'International Law')
-    .field('year_of_entry',      '2019')
+    .field('full_name', 'Jane Smith')
+    .field('matricule', `MAT-REV-${Date.now()}`)
+    .field('email', `jane${Date.now()}@gmail.com`)
+    .field('department', 'Law')
+    .field('program', 'International Law')
+    .field('year_of_entry', '2019')
     .field('year_of_graduation', '2023')
-    .field('gpa',                '3.9')
-    .attach('certificate_pdf',   uniquePdf);
+    .field('gpa', '3.9')
+    .attach('certificate_pdf', uniquePdf);
 
   if (response.status !== 201) {
     throw new Error(
@@ -194,16 +190,34 @@ beforeAll(async () => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 afterAll(async () => {
-  // Clean up uploads directory
-  if (fs.existsSync('uploads')) {
-    fs.rmSync('uploads', { recursive: true, force: true });
-  }
-
   // Clean up unique pdf fixtures
   const fixtureDir = path.resolve('test', 'fixtures');
   fs.readdirSync(fixtureDir)
     .filter(f => f.startsWith('revoke-') && f.endsWith('.pdf'))
     .forEach(f => fs.unlinkSync(path.join(fixtureDir, f)));
+
+
+  try {
+    const uploadsDir = path.resolve('uploads');
+
+    if (fs.existsSync(uploadsDir)) {
+      const files = fs.readdirSync(uploadsDir);
+
+      for (const file of files) {
+        // Construct absolute path to the file
+        const filePath = path.join(uploadsDir, file);
+
+        // Ensure it's a file before trying to delete it
+        if (fs.statSync(filePath).isFile()) {
+          fs.unlinkSync(filePath);
+        }
+      }
+    }
+  } catch (error) {
+    // Uses structural fallback to avoid breaking test teardown logs
+    console.warn('Failed to clean up uploads directory:', error.message);
+  }
+
 
   await prisma.auditLog.deleteMany();
   await prisma.certificate.deleteMany();
@@ -266,22 +280,22 @@ describe('Certificate Revocation Integration Tests', () => {
       // Create a second org and sign a token for it
       const otherOrg = await prisma.organisation.create({
         data: {
-          name:           'Other University',
-          code:           `OTHER-${Date.now()}`,
-          type:           'UNIVERSITY',
-          country:        'Cameroon',
-          city:           'Douala',
+          name: 'Other University',
+          code: `OTHER-${Date.now()}`,
+          type: 'UNIVERSITY',
+          country: 'Cameroon',
+          city: 'Douala',
           official_email: `other${Date.now()}@gmail.com`,
-          phone:          '677000099',
-          address:        'Other Address',
-          status:         'APPROVED'
+          phone: '677000099',
+          address: 'Other Address',
+          status: 'APPROVED'
         }
       });
 
       const otherAdminToken = signAccessToken({
         userId: 'other-user-id',
-        orgId:  otherOrg.id,
-        role:   'ORG_SUPER_ADMIN'
+        orgId: otherOrg.id,
+        role: 'ORG_SUPER_ADMIN'
       });
 
       const response = await request(app)

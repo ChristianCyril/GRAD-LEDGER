@@ -5,6 +5,7 @@ import Header from '../components/Header';
 import OrgSuperAdminSidebar from '../components/OrgSuperAdminSidebar';
 import './ChangePassword.css';
 import useApiPrivate from '../hooks/useApiPrivate';
+import OrgAdminSidebar from '../components/OrgAdminSideBar';
 
 
 
@@ -133,7 +134,11 @@ export default function ChangePassword() {
   return (
 
     <div className="cp-wrapper">
-      <OrgSuperAdminSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} org={org} />
+       {user.role === 'ORG_ADMIN'?
+            <OrgAdminSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} org={org} />:
+            <OrgSuperAdminSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} org={org} />
+            }
+            
       <div className="cp-main">
         <Header org={org} user={user} setSidebarOpen={setSidebarOpen} />
 

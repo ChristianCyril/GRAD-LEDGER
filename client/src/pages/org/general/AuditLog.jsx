@@ -3,6 +3,7 @@ import useApiPrivate from '../../../hooks/useApiPrivate';
 import { useAuth } from '../../../hooks/useAuth';
 import Header from '../../../components/Header';
 import OrgSuperAdminSidebar from '../../../components/OrgSuperAdminSidebar';
+import OrgAdminSidebar from '../../../components/OrgAdminSideBar';
 import './AuditLog.css';
 
 /* ─── Constants ──────────────────────────────────────── */
@@ -243,7 +244,11 @@ export default function AuditLog() {
 
   return (
     <div className="al-wrapper">
+      {user.role === 'ORG_ADMIN'?
+      <OrgAdminSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} org={org} />:
       <OrgSuperAdminSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} org={org} />
+      }
+      
       <div className="al-main">
         <Header org={org} user={user} setSidebarOpen={setSidebarOpen} />
 

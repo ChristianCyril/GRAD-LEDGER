@@ -4,6 +4,7 @@ import './IssueCertificate.css';
 import Header from '../../../components/Header';
 import OrgSuperAdminSidebar from '../../../components/OrgSuperAdminSidebar';
 import { useAuth } from '../../../hooks/useAuth';
+import OrgAdminSidebar from '../../../components/OrgAdminSideBar';
 
 /* ─── Constants ─────────────────────────────────────── */
 
@@ -255,11 +256,11 @@ export default function IssueCertificate() {
   /* ── Render ── */
   return (
     <div className="ic-wrapper">
-      <OrgSuperAdminSidebar
-        open={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-        org={org}
-      />
+       {user.role === 'ORG_ADMIN'?
+            <OrgAdminSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} org={org} />:
+            <OrgSuperAdminSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} org={org} />
+            }
+            
       <div className="ic-main">
         <Header org={org} user={user} setSidebarOpen={setSidebarOpen} />
         <div className="ic-page">

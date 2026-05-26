@@ -4,6 +4,7 @@ import { useAuth } from '../../../hooks/useAuth';
 import Header from '../../../components/Header';
 import OrgSuperAdminSidebar from '../../../components/OrgSuperAdminSidebar';
 import './CertificatesList.css';
+import OrgAdminSidebar from '../../../components/OrgAdminSideBar';
 
 /* ─── Constants ──────────────────────────────────────── */
 
@@ -584,7 +585,11 @@ export default function CertificatesList() {
 
   return (
     <div className="cl-wrapper">
-      <OrgSuperAdminSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} org={org} />
+       {user.role === 'ORG_ADMIN'?
+            <OrgAdminSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} org={org} />:
+            <OrgSuperAdminSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} org={org} />
+            }
+            
       <div className="cl-main">
         <Header org={org} user={user} setSidebarOpen={setSidebarOpen} />
 
