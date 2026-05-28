@@ -241,7 +241,7 @@ function DetailRow({ label, value, mono, children }) {
   );
 }
 
-function DetailPanel({ cert, onClose, onRetry, onRetryEmail, retrying, retryingEmail, onRevokeOpen }) {
+function DetailPanel({ cert, onClose, onRetry, onRetryEmail, retrying, retryingEmail, onRevokeOpen,setShowUnrevokeModal }) {
   const panelRef = useRef(null);
 
   useEffect(() => {
@@ -295,26 +295,26 @@ function DetailPanel({ cert, onClose, onRetry, onRetryEmail, retrying, retryingE
         <div className="cl-panel__body">
           <div className="cl-detail__section">
             <span className="cl-detail__section-title label">Student</span>
-            <DetailRow label="Full name"  value={cert.student?.full_name} />
-            <DetailRow label="Matricule"  value={cert.student?.matricule} mono />
-            <DetailRow label="Email"      value={cert.student?.email} />
+            <DetailRow label="Full name" value={cert.student?.full_name} />
+            <DetailRow label="Matricule" value={cert.student?.matricule} mono />
+            <DetailRow label="Email" value={cert.student?.email} />
           </div>
 
           <div className="cl-detail__section">
             <span className="cl-detail__section-title label">Academic record</span>
-            <DetailRow label="Department"         value={cert.department} />
-            <DetailRow label="Program"            value={cert.program} />
-            <DetailRow label="Year of entry"      value={cert.year_of_entry} />
+            <DetailRow label="Department" value={cert.department} />
+            <DetailRow label="Program" value={cert.program} />
+            <DetailRow label="Year of entry" value={cert.year_of_entry} />
             <DetailRow label="Year of graduation" value={cert.year_of_graduation} />
-            <DetailRow label="GPA"                value={cert.gpa} />
+            <DetailRow label="GPA" value={cert.gpa} />
           </div>
 
           <div className="cl-detail__section">
             <span className="cl-detail__section-title label">Record</span>
-            <DetailRow label="Issued by"   value={`${cert.issued_by?.full_name} (${cert.issued_by?.job_title})`} />
-            <DetailRow label="Issued on"   value={fmtDateTime(cert.issued_at)} />
+            <DetailRow label="Issued by" value={`${cert.issued_by?.full_name} (${cert.issued_by?.job_title})`} />
+            <DetailRow label="Issued on" value={fmtDateTime(cert.issued_at)} />
             {cert.revoked_at && (
-              <DetailRow label="Revoked on"    value={fmtDateTime(cert.revoked_at)} />
+              <DetailRow label="Revoked on" value={fmtDateTime(cert.revoked_at)} />
             )}
             {cert.revoke_reason && (
               <DetailRow label="Revoke reason" value={cert.revoke_reason} />
@@ -372,6 +372,15 @@ function DetailPanel({ cert, onClose, onRetry, onRetryEmail, retrying, retryingE
                 onClick={() => onRevokeOpen(cert.id)}
               >
                 Revoke certificate
+              </button>
+            )}
+
+            {cert.status === 'REVOKED' && (
+              <button
+                className="cl-btn cl-btn--secondary cl-btn--full"
+                onClick={() => {setShowUnrevokeModal(true) }}
+              >
+                Unrevoke certificate
               </button>
             )}
 
@@ -449,6 +458,48 @@ function EmptyState({ filtered }) {
   );
 }
 
+function UnrevokeModal({ student , onConfirm, onCancel, unrevoking }) {  //styles for the element here are found in ManageAdmins.css.
+  return (                                                               //Did not restyle because all elements here are a subsets of an existing component there 
+    <div className="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="toggle-modal-title">
+      <div className="modal">
+        <div className="modal__header">
+          <div className="modal__icon  modal__icon--success" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
+                <circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.3" />
+                <path d="M5 8l2.5 2.5 4-4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+          </div>
+          <h2 className="modal__title" id="toggle-modal-title">
+            Unrevoke certificate
+          </h2>
+        </div>
+
+        <p className="modal__sub">
+            <>Unrevoking certificate for <strong>{student.full_name}</strong> means they have been cleared 
+            from the reason that had their certificate revoked.</>  
+        </p>
+
+        <div className="modal__actions">
+          <button className="modal__btn modal__btn--cancel" onClick={onCancel} disabled={unrevoking}>
+            Cancel
+          </button>
+          <button
+            className="modal__btn  modal__btn--success"
+            onClick={onConfirm}
+            disabled={unrevoking}
+          >
+            {unrevoking
+              ? <><span className="spinner" aria-hidden="true" />Processing…</>
+              : 'Unrevoke'
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
 /* ─── Main component ─────────────────────────────────── */
 
 export default function CertificatesList() {
@@ -466,6 +517,8 @@ export default function CertificatesList() {
   const [org,           setOrg]           = useState(null);
   const [sidebarOpen,   setSidebarOpen]   = useState(false);
   const [revokeTargetId, setRevokeTargetId] = useState(null); // just the cert id
+  const [showUnrevokeModal, setShowUnrevokeModal] = useState(false)
+  const [unrevoking, setUnrevoking] = useState(false)
 
   const api         = useApiPrivate();
   const { auth }    = useAuth();
@@ -576,6 +629,25 @@ export default function CertificatesList() {
       return err.response?.data?.message ?? 'Revocation failed. Please try again.';
     }
   }, [api, revokeTargetId, fetchCerts, showToast]);
+  
+  //Unrevoke certificate on the blockchain
+  const handleUnrevoke = useCallback(async () => {
+  setUnrevoking(true);
+  try {
+    await api.post(`/api/certificates/${selected.id}/unrevoke`);
+    showToast('success', 'Certificate successfully unrevoked.');
+    setShowUnrevokeModal(false);
+    await fetchCerts();
+    setSelected(prev =>
+      prev?.id === selected.id ? { ...prev, status: 'CONFIRMED', revoke_reason: null, revoked_at: null } : prev
+    );
+  } catch (err) {
+    showToast('error', err.response?.data?.message ?? 'Unrevoke failed. Please try again.');
+    setShowUnrevokeModal(false);
+  } finally {
+    setUnrevoking(false);
+  }
+}, [api, selected, fetchCerts, showToast]);
 
   /* Panel open/close */
   const openPanel  = (cert) => setSelected(cert);
@@ -738,6 +810,7 @@ export default function CertificatesList() {
           retrying={retrying}
           retryingEmail={retryingEmail}
           onRevokeOpen={(id) => setRevokeTargetId(id)}
+          setShowUnrevokeModal={setShowUnrevokeModal} 
         />
       )}
 
@@ -746,6 +819,15 @@ export default function CertificatesList() {
         <RevokeModal
           onCancel={() => setRevokeTargetId(null)}
           onConfirm={handleRevoke}
+        />
+      )}
+
+      {showUnrevokeModal && selected && (
+        <UnrevokeModal
+          student={selected.student}
+          onConfirm={handleUnrevoke}
+          onCancel={() => setShowUnrevokeModal(false)}
+          unrevoking={unrevoking}
         />
       )}
 

@@ -8,7 +8,8 @@ import {
   resendCertificateEmail,
   getOrgCertificates,
   getCertificateById,
-  revokeCertificate
+  revokeCertificate,
+  unrevokeCertificate
 } from '../controller/certificateController.js';
 
 const router = Router();
@@ -22,5 +23,6 @@ router.get('/:id', getCertificateById);
 router.post('/:id/retry', retryCertificate);
 router.post('/:id/resend-email', resendCertificateEmail);
 router.post('/:id/revoke', revokeCertificate);
+router.post('/:id/unrevoke',unrevokeCertificate);
 
 export default router;

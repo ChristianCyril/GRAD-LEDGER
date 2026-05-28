@@ -14,6 +14,7 @@ contract CertificateRegistry {
 
     event CertificateIssued(string indexed certId, string certHash, address issuedBy);
     event CertificateRevoked(string indexed certId, address revokedBy);
+    event CertificateUnrevoked(string indexed certId, address unrevokedBy);
 
     function issueCertificate(string memory certId, string memory certHash) public {
         require(bytes(certificates[certId].certHash).length == 0, "Certificate already exists");
@@ -26,6 +27,13 @@ contract CertificateRegistry {
         require(!certificates[certId].isRevoked, "Certificate already revoked");
         certificates[certId].isRevoked = true;
         emit CertificateRevoked(certId, msg.sender);
+    }
+
+    function unrevokeCertificate(string memory certId) public {
+        require(bytes(certificates[certId].certHash).length != 0, "Certificate not found");
+        require(certificates[certId].isRevoked, "Certificate is not revoked");
+        certificates[certId].isRevoked = false;
+        emit CertificateUnrevoked(certId, msg.sender);
     }
 
     function verifyCertificate(string memory certId)

@@ -13,11 +13,87 @@ export const sendPasswordResetEmail = async (toEmail, resetToken) => {
     to: toEmail,
     subject: 'Reset Your Password — Grad-Ledger',
     html: `
-      <p>A password reset was requested for your Grad-Ledger account.</p>
-      <p><a href="${resetLink}">Click here to reset your password</a></p>
-      <p>This link expires in 1 hour.</p>
-      <p>If you did not request this, ignore this email.</p>
-    `
+      <!DOCTYPE html>
+      <html>
+        <body style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; padding: 24px;">
+
+          <h2 style="color: #2563eb;">Password Reset Request</h2>
+
+          <p>Dear User,</p>
+
+          <p>
+            We received a request to reset the password for your
+            <strong>Grad-Ledger</strong> account. Click the button below
+            to choose a new password.
+          </p>
+
+          <div style="
+            background-color: #eff6ff;
+            border:           1px solid #bfdbfe;
+            border-left:      4px solid #2563eb;
+            border-radius:    8px;
+            padding:          16px;
+            margin:           24px 0;
+          ">
+            <p style="margin: 0; font-weight: bold; color: #2563eb;">
+              🔒 This link expires in 1 hour
+            </p>
+            <p style="margin: 8px 0 0 0; font-size: 14px;">
+              For your security, this password reset link can only be used once
+              and will expire after 1 hour.
+            </p>
+          </div>
+
+          <div style="margin: 24px 0;">
+            
+              href="${resetLink}"
+              style="
+                background-color: #2563eb;
+                color:            #ffffff;
+                padding:          12px 24px;
+                text-decoration:  none;
+                border-radius:    6px;
+                font-weight:      bold;
+                display:          inline-block;
+              "
+            >
+              Reset My Password
+            </a>
+          </div>
+
+          <p>
+            If the button above does not work, copy and paste the link below
+            into your browser:
+          </p>
+          <p style="
+            word-break:       break-all;
+            font-size:        13px;
+            color:            #2563eb;
+            background-color: #f8fafc;
+            padding:          10px;
+            border-radius:    6px;
+          ">
+            ${resetLink}
+          </p>
+
+          <p>
+            If you did not request a password reset, you can safely ignore this
+            email. Your password will remain unchanged.
+          </p>
+
+          <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />
+
+          <p style="font-size: 12px; color: #999;">
+            This is an automated notification from Grad-Ledger. Please do not
+            reply to this email directly. If you need help, contact us at
+            <a href="mailto:${process.env.SUPER_ADMIN_EMAIL}">
+              ${process.env.SUPER_ADMIN_EMAIL}
+            </a>.
+          </p>
+
+        </body>
+      </html>
+    `,
   });
 };
 
@@ -207,13 +283,13 @@ export const sendAdminCreatedEmail = async (toEmail, adminName, orgName, tempPas
   await transporter.sendMail({
     from: process.env.MAIL_FROM,
     to: toEmail,
-    subject: `Your Admin Account — ${orgName} on CertChain`,
+    subject: `Your Admin Account — ${orgName} on Block-Ledger`,
     html: `
       <!DOCTYPE html>
       <html>
         <body style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; padding: 24px;">
-          <h2 style="color: #1a1a1a;">Welcome to CertChain, ${adminName}</h2>
-          <p>An admin account has been created for you under <strong>${orgName}</strong> on CertChain.</p>
+          <h2 style="color: #1a1a1a;">Welcome to Block-Ledger, ${adminName}</h2>
+          <p>An admin account has been created for you under <strong>${orgName}</strong> on Block-Ledger.</p>
 
           <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; margin: 24px 0;">
             <p style="margin: 0 0 8px 0;"><strong>Login email:</strong> ${toEmail}</p>
@@ -235,7 +311,7 @@ export const sendAdminCreatedEmail = async (toEmail, adminName, orgName, tempPas
                 display: inline-block;
               "
             >
-              Log In to CertChain
+              Log In to Block-Ledger
             </a>
           </div>
 
@@ -314,7 +390,7 @@ export const sendRevocationEmail = async (toEmail, studentName, orgName) => {
   await transporter.sendMail({
     from: process.env.MAIL_FROM,
     to: toEmail,
-    subject: 'Certificate Revocation Notice — CertChain',
+    subject: 'Certificate Revocation Notice — Block-Ledger',
     html: `
       <!DOCTYPE html>
       <html>
@@ -326,7 +402,7 @@ export const sendRevocationEmail = async (toEmail, studentName, orgName) => {
 
           <p>
             We are writing to inform you that a certificate previously issued to you by
-            <strong>${orgName}</strong> on the CertChain platform has been revoked.
+            <strong>${orgName}</strong> on the Block-Ledger platform has been revoked.
           </p>
 
           <div style="
@@ -353,7 +429,7 @@ export const sendRevocationEmail = async (toEmail, studentName, orgName) => {
           </p>
 
           <p>
-            You can also reach the CertChain support team at
+            You can also reach the Block-Ledger support team at
             <a href="mailto:${process.env.SUPER_ADMIN_EMAIL}">
               ${process.env.SUPER_ADMIN_EMAIL}
             </a>
@@ -363,12 +439,75 @@ export const sendRevocationEmail = async (toEmail, studentName, orgName) => {
           <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />
 
           <p style="font-size: 12px; color: #999;">
-            This is an automated notification from CertChain. Please do not reply
+            This is an automated notification from Block-Ledger. Please do not reply
             to this email directly.
           </p>
 
         </body>
       </html>
     `
+  });
+};
+
+export const sendCertificateUnrevokedEmail = async (toEmail, studentName, orgName) => {
+  await transporter.sendMail({
+    from: process.env.MAIL_FROM,
+    to: toEmail,
+    subject: 'Certificate Reinstated — Block-Ledger',
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <body style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; padding: 24px;">
+
+          <h2 style="color: #16a34a;">Certificate Reinstated</h2>
+
+          <p>Dear <strong>${studentName}</strong>,</p>
+
+          <p>
+            We are writing to inform you that a certificate previously revoked by
+            <strong>${orgName}</strong> on the Block-Ledger platform has been reinstated
+            and is now valid again.
+          </p>
+
+          <div style="
+            background-color: #f0fdf4;
+            border:           1px solid #bbf7d0;
+            border-left:      4px solid #16a34a;
+            border-radius:    8px;
+            padding:          16px;
+            margin:           24px 0;
+          ">
+            <p style="margin: 0; font-weight: bold; color: #16a34a;">
+              ✓ This certificate is now valid
+            </p>
+            <p style="margin: 8px 0 0 0; font-size: 14px;">
+              Any verification attempt on this certificate will now return a
+              <strong>Valid</strong> status.
+            </p>
+          </div>
+
+          <p>
+            If you have any questions about the reinstatement of your certificate,
+            please contact <strong>${orgName}</strong> directly.
+          </p>
+
+          <p>
+            You can also reach the Block-Ledger support team at
+            <a href="mailto:${process.env.SUPER_ADMIN_EMAIL}">
+              ${process.env.SUPER_ADMIN_EMAIL}
+            </a>
+            if you need further assistance.
+          </p>
+
+          <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />
+
+          <p style="font-size: 12px; color: #999;">
+            This is an automated notification from Block-Ledger. Please do not reply
+            to this email directly.
+          </p>
+
+        </body>
+      </html>
+    `,
   });
 };

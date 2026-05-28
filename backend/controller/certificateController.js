@@ -4,9 +4,9 @@ import prisma from '../config/prisma.js';
 import cloudinary            from '../config/cloudinary.js';
 import { hashPDFFile }       from '../service/hashService.js';
 import { generateQRCode }    from '../service/qrService.js';
-import { issueOnChain, revokeOnChain }      from '../service/blockchainService.js';
+import { issueOnChain, revokeOnChain,unrevokeOnChain  }      from '../service/blockchainService.js';
 import { verifyOnChain }     from '../service/blockchainService.js';
-import { sendCertificateIssuedEmail,sendRevocationEmail} from '../service/emailService.js';
+import { sendCertificateIssuedEmail,sendRevocationEmail,sendCertificateUnrevokedEmail} from '../service/emailService.js';
 
 // ─── ISSUE CERTIFICATE ────────────────────────────────────────────────────────
 
@@ -798,5 +798,107 @@ export const revokeCertificate = async (req, res) => {
   } catch (err) {
     console.error('revokeCertificate error:', err);
     return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+export const unrevokeCertificate = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { orgId, role, id: callerId } = req.user;
+
+    // ── 1. Find the certificate ───────────────────────────────────────────────
+
+    const cert = await prisma.certificate.findUnique({
+      where: { id },
+      include: {
+        student:      true,
+        organisation: true,
+      },
+    });
+
+    if (!cert) {
+      return res.status(404).json({
+        success: false,
+        message: 'Certificate not found',
+      });
+    }
+
+    // ── 2. Verify the certificate belongs to the caller's org ─────────────────
+
+    if (cert.org_id !== orgId) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied',
+      });
+    }
+
+    // ── 3. Guard: only REVOKED certificates can be unrevoked ──────────────────
+
+    if (cert.status !== 'REVOKED') {
+      return res.status(400).json({
+        success: false,
+        message: `Certificate cannot be unrevoked — current status is ${cert.status}`,
+      });
+    }
+
+    // ── 4. Call blockchain ────────────────────────────────────────────────────
+
+    let txHash;
+    try {
+      txHash = await unrevokeOnChain(cert.id);
+    } catch (blockchainErr) {
+      console.error('[unrevokeCertificate] blockchain error:', blockchainErr);
+      return res.status(500).json({
+        success: false,
+        message: 'Blockchain transaction failed. Please try again.',
+      });
+    }
+
+    // ── 5. Update DB ──────────────────────────────────────────────────────────
+
+    await prisma.certificate.update({
+      where: { id },
+      data: {
+        status:        'CONFIRMED',
+        revoke_reason: null,
+        revoked_at:    null,
+        tx_hash:       txHash,
+      },
+    });
+
+    // ── 6. Audit log ──────────────────────────────────────────────────────────
+
+    await prisma.auditLog.create({
+      data: {
+        org_id:      orgId,
+        actor_id:    callerId,
+        action:      'CERTIFICATE_UNREVOKED',
+        description: `Certificate ${cert.id} unrevoked for student ${cert.student.full_name} (${cert.student.matricule})`,
+      },
+    });
+
+    // ── 7. Notify student ─────────────────────────────────────────────────────
+
+    await sendCertificateUnrevokedEmail(
+      cert.student.email,
+      cert.student.full_name,
+      cert.organisation.name,
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: 'Certificate successfully unrevoked',
+      data: {
+        certId:    cert.id,
+        status:    'CONFIRMED',
+        tx_hash:   txHash,
+      },
+    });
+  } catch (err) {
+    console.error('[unrevokeCertificate]', err);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+    });
   }
 };
