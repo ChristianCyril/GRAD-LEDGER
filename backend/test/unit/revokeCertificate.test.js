@@ -23,12 +23,14 @@ jest.unstable_mockModule('../../config/prisma.js', () => ({
 jest.unstable_mockModule('../../service/blockchainService.js', () => ({
   revokeOnChain:  mockRevokeOnChain,
   issueOnChain:   jest.fn(),
-  verifyOnChain:  jest.fn()
+  verifyOnChain:  jest.fn(),
+  unrevokeOnChain: jest.fn()
 }));
 
 jest.unstable_mockModule('../../service/emailService.js', () => ({
   sendRevocationEmail:      mockSendRevocationEmail,
-  sendCertificateIssuedEmail: jest.fn()
+  sendCertificateIssuedEmail: jest.fn(),
+  sendCertificateUnrevokedEmail: jest.fn()
 }));
 
 // ─────────────────────────────────────────────────────────────────────────────

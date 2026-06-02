@@ -1,7 +1,6 @@
 import fs from 'fs';
 import path from 'path';
 import { hashPDFFile, hashesMatch } from '../../service/hashService.js';
-import { generateQRCode } from '../../service/qrService.js';
 import { issueCertificate } from '../../controller/certificateController.js';
 import { getPrismaClient } from '../prisma.singleton.js';
 import { v4 as uuid } from 'uuid';
@@ -66,22 +65,7 @@ describe('Issuance Unit Tests', () => {
     });
   });
 
-  describe('generateQRCode', () => {
-    it('should return a string starting with data:image/png;base64,', async () => {
-      const certId = uuid();
-      const qrCode = await generateQRCode(certId);
-      expect(typeof qrCode).toBe('string');
-      expect(qrCode.startsWith('data:image/png;base64,')).toBe(true);
-    });
-
-    it('should generate unique QR codes for different cert IDs', async () => {
-      const certId1 = uuid();
-      const certId2 = uuid();
-      const qrCode1 = await generateQRCode(certId1);
-      const qrCode2 = await generateQRCode(certId2);
-      expect(qrCode1).not.toBe(qrCode2);
-    });
-  });
+  
 
   describe('issueCertificate', () => {
     let testOrg, testUser, tempPDF;

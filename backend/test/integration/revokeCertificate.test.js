@@ -13,7 +13,6 @@ jest.setTimeout(15000);
 const mockIssueOnChain = jest.fn();
 const mockRevokeOnChain = jest.fn();
 const mockVerifyOnChain = jest.fn();
-const mockGenerateQRCode = jest.fn();
 const mockSendCertificateIssuedEmail = jest.fn();
 const mockSendRevocationEmail = jest.fn();
 
@@ -21,15 +20,24 @@ jest.unstable_mockModule('../../service/blockchainService.js', () => ({
   issueOnChain: mockIssueOnChain,
   revokeOnChain: mockRevokeOnChain,
   verifyOnChain: mockVerifyOnChain,
+  unrevokeOnChain: jest.fn()
 }));
 
-jest.unstable_mockModule('../../service/qrService.js', () => ({
-  generateQRCode: mockGenerateQRCode,
+jest.unstable_mockModule('../../service/stampQRCodeOnPDF.js', () => ({
+  stampQRCodeOnPDF: jest.fn()
 }));
+
+jest.unstable_mockModule('../../service/validatePDF.js', () => ({
+  validatePDF: jest.fn().mockResolvedValue({
+    valid: true
+  })
+}));
+
 
 jest.unstable_mockModule('../../service/emailService.js', () => ({
   sendCertificateIssuedEmail: mockSendCertificateIssuedEmail,
   sendRevocationEmail: mockSendRevocationEmail,
+  sendCertificateUnrevokedEmail: jest.fn()
 }));
 
 jest.unstable_mockModule('../../config/cloudinary.js', () => ({
@@ -158,7 +166,6 @@ beforeAll(async () => {
 
   // ── Issue a certificate that will be used across revocation tests ──────────
   mockIssueOnChain.mockResolvedValue('0xaabbccddeeff');
-  mockGenerateQRCode.mockResolvedValue('data:image/png;base64,fakeqr');
   mockSendCertificateIssuedEmail.mockResolvedValue(undefined);
 
   const uniquePdf = createUniquePdfPath();
@@ -230,7 +237,6 @@ afterAll(async () => {
 
 beforeEach(() => {
   jest.clearAllMocks();
-  mockGenerateQRCode.mockResolvedValue('data:image/png;base64,fakeqr');
   mockSendRevocationEmail.mockResolvedValue(undefined);
 });
 
