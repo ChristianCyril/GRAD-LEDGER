@@ -1,13 +1,13 @@
-import { v4 as uuid }        from 'uuid';
-import fs                    from 'fs';
+import { v4 as uuid } from 'uuid';
+import fs from 'fs';
 import prisma from '../config/prisma.js';
-import cloudinary            from '../config/cloudinary.js';
-import { hashPDFFile }       from '../service/hashService.js';
-import { generateQRCode }    from '../service/qrService.js';
-import { issueOnChain, revokeOnChain,unrevokeOnChain  }      from '../service/blockchainService.js';
-import { verifyOnChain }     from '../service/blockchainService.js';
-import { sendCertificateIssuedEmail,sendRevocationEmail,sendCertificateUnrevokedEmail} from '../service/emailService.js';
-
+import cloudinary from '../config/cloudinary.js';
+import { hashPDFFile } from '../service/hashService.js';
+import { issueOnChain, revokeOnChain, unrevokeOnChain } from '../service/blockchainService.js';
+import { verifyOnChain } from '../service/blockchainService.js';
+import { sendCertificateIssuedEmail, sendRevocationEmail, sendCertificateUnrevokedEmail } from '../service/emailService.js';
+import { stampQRCodeOnPDF } from '../service/stampQRCodeOnPDF.js'
+import { validatePDF } from '../service/validatePDF.js';
 // ─── ISSUE CERTIFICATE ────────────────────────────────────────────────────────
 
 export const issueCertificate = async (req, res) => {
@@ -44,7 +44,7 @@ export const issueCertificate = async (req, res) => {
     if (missingFields.length > 0) {
       return res.status(400).json({
         message: 'Missing required fields',
-        fields:  missingFields
+        fields: missingFields
       });
     }
 
@@ -61,9 +61,9 @@ export const issueCertificate = async (req, res) => {
     tempFilePath = req.file.path;
 
     // ── 3. Parse numeric fields ──────────────────────────────────────────────
-    const yearOfEntry      = parseInt(year_of_entry);
+    const yearOfEntry = parseInt(year_of_entry);
     const yearOfGraduation = parseInt(year_of_graduation);
-    const gpaFloat         = parseFloat(gpa);
+    const gpaFloat = parseFloat(gpa);
 
     if (isNaN(yearOfEntry) || isNaN(yearOfGraduation) || isNaN(gpaFloat)) {
       return res.status(400).json({
@@ -83,16 +83,16 @@ export const issueCertificate = async (req, res) => {
       });
     }
 
-    const normalizedEmail     = email.trim().toLowerCase();
+    const normalizedEmail = email.trim().toLowerCase();
     const normalizedMatricule = matricule.trim();
-    const orgId               = req.user.orgId;
+    const orgId = req.user.orgId;
 
     // ── 4. Check if student with same [org_id, email] already exists ─────────
     const existingStudentByEmail = await prisma.student.findUnique({
       where: {
         org_id_email: {
           org_id: orgId,
-          email:  normalizedEmail
+          email: normalizedEmail
         }
       }
     });
@@ -101,13 +101,31 @@ export const issueCertificate = async (req, res) => {
     const existingStudentByMatricule = await prisma.student.findUnique({
       where: {
         org_id_matricule: {
-          org_id:    orgId,
+          org_id: orgId,
           matricule: normalizedMatricule
         }
       }
     });
 
-    // If both email and matricule exist but belong to different students
+    const org = await prisma.organisation.findUnique({
+      where: { id: orgId, }
+    });
+
+    // CHECK A: Email exists, but they provided a different matricule
+    if (existingStudentByEmail && !existingStudentByMatricule) {
+      return res.status(400).json({
+        message: `The email ${email} is already registered to a student, but with a different matricule number.`
+      });
+    }
+
+    // CHECK B: Matricule exists, but they provided a different email
+    if (!existingStudentByEmail && existingStudentByMatricule) {
+      return res.status(400).json({
+        message: `The matricule ${normalizedMatricule} is already assigned to a student, but with a different email address.`
+      });
+    }
+
+    // CHECK C:If both email and matricule exist but belong to different students
     // that is a data conflict — the admin may have mixed up details
     if (
       existingStudentByEmail &&
@@ -128,9 +146,9 @@ export const issueCertificate = async (req, res) => {
       const duplicate = await prisma.certificate.findUnique({
         where: {
           student_id_org_id_program_year_of_graduation: {
-            student_id:         existingStudent.id,
-            org_id:             orgId,
-            program:            program.trim(),
+            student_id: existingStudent.id,
+            org_id: orgId,
+            program: program.trim(),
             year_of_graduation: yearOfGraduation
           }
         }
@@ -143,12 +161,27 @@ export const issueCertificate = async (req, res) => {
       }
     }
 
-    // ── 7. Hash the PDF ──────────────────────────────────────────────────────
-    const certHash = hashPDFFile(tempFilePath);
 
-    // ── 8. Check blockchain for duplicate hash ───────────────────────────────
     // Generate certId now so we can use it for Cloudinary and blockchain
     const certId = uuid();
+
+    // After multer saves the file, before hashing or stamping
+    const validation = await validatePDF(tempFilePath);
+
+    if (!validation.valid) {
+      fs.unlinkSync(tempFilePath); // clean up temp file
+      return res.status(400).json({
+        success: false,
+        message: validation.message, // clear message to the admin
+      });
+    }
+
+    // Stamp QR onto PDF first
+    await stampQRCodeOnPDF(tempFilePath, certId, org.name);
+
+
+    // ── 8. Hash the PDF ──────────────────────────────────────────────────────
+    const certHash = hashPDFFile(tempFilePath);
 
     // Also check if this exact PDF hash already exists in the database
     // (catches duplicates even if blockchain is out of sync)
@@ -167,9 +200,9 @@ export const issueCertificate = async (req, res) => {
     let uploadResult;
     try {
       uploadResult = await cloudinary.uploader.upload(tempFilePath, {
-        folder:        'certchain/certificates',
+        folder: 'certchain/certificates',
         resource_type: 'raw',
-        public_id:     certId
+        public_id: certId
       });
     } catch (cloudinaryErr) {
       console.error('Cloudinary upload error:', {
@@ -178,7 +211,7 @@ export const issueCertificate = async (req, res) => {
         syscall: cloudinaryErr.syscall,
         hostname: cloudinaryErr.hostname
       });
-      
+
       // Check if it's a network error
       if (cloudinaryErr.code === 'EAI_AGAIN' || cloudinaryErr.code === 'ENOTFOUND') {
         fs.unlinkSync(req.file.path);
@@ -205,10 +238,10 @@ export const issueCertificate = async (req, res) => {
     } else {
       student = await prisma.student.create({
         data: {
-          org_id:    orgId,
+          org_id: orgId,
           full_name: full_name.trim(),
           matricule: normalizedMatricule,
-          email:     normalizedEmail
+          email: normalizedEmail
         }
       });
     }
@@ -216,18 +249,18 @@ export const issueCertificate = async (req, res) => {
     // ── 12. Create Certificate record with PENDING status ────────────────────
     const certificate = await prisma.certificate.create({
       data: {
-        id:                certId,
-        org_id:            orgId,
-        student_id:        student.id,
-        issued_by_id:      req.user.id,
-        department:        department.trim(),
-        program:           program.trim(),
-        year_of_entry:     yearOfEntry,
+        id: certId,
+        org_id: orgId,
+        student_id: student.id,
+        issued_by_id: req.user.id,
+        department: department.trim(),
+        program: program.trim(),
+        year_of_entry: yearOfEntry,
         year_of_graduation: yearOfGraduation,
-        gpa:               gpaFloat,
-        certificate_hash:  certHash,
-        cloudinary_url:    cloudinaryUrl,
-        status:            'PENDING'
+        gpa: gpaFloat,
+        certificate_hash: certHash,
+        cloudinary_url: cloudinaryUrl,
+        status: 'PENDING'
       }
     });
 
@@ -242,7 +275,7 @@ export const issueCertificate = async (req, res) => {
       await prisma.certificate.update({
         where: { id: certId },
         data: {
-          status:  'CONFIRMED',
+          status: 'CONFIRMED',
           tx_hash: txHash
         }
       });
@@ -254,24 +287,22 @@ export const issueCertificate = async (req, res) => {
       // Update certificate to FAILED — student record and PDF are preserved
       await prisma.certificate.update({
         where: { id: certId },
-        data:  { status: 'FAILED' }
+        data: { status: 'FAILED' }
       });
     }
 
-    // ── 14. Generate QR code ─────────────────────────────────────────────────
-    const qrCodeDataUrl = await generateQRCode(certId);
 
     // ── 15. Create audit log ─────────────────────────────────────────────────
     await prisma.auditLog.create({
       data: {
-        org_id:      orgId,
-        actor_id:    req.user.id,
-        action:      'CERTIFICATE_ISSUED',
+        org_id: orgId,
+        actor_id: req.user.id,
+        action: 'CERTIFICATE_ISSUED',
         description: `Certificate issued to ${full_name.trim()} (${normalizedEmail}) for ${program.trim()} — ${yearOfGraduation}`
       }
     });
 
-    
+
     // ── 16. Send email to student ────────────────────────────────────────────
 
     let emailError = false;
@@ -281,19 +312,18 @@ export const issueCertificate = async (req, res) => {
         full_name.trim(),
         certId,
         cloudinaryUrl,
-        qrCodeDataUrl
       )
       await prisma.certificate.update({
-        where:{ id: certId },
-        data:{issuance_email_status: 'SENT'}
+        where: { id: certId },
+        data: { issuance_email_status: 'SENT' }
       })
 
     } catch (err) {
       console.error('sendCertificateIssuedEmail error:', err)
       emailError = true
       await prisma.certificate.update({
-        where:{ id: certId },
-        data:{issuance_email_status: 'FAILED'}
+        where: { id: certId },
+        data: { issuance_email_status: 'FAILED' }
       }).catch(dbErr => console.error('Failed to log email status to DB:', dbErr));
     }
 
@@ -351,9 +381,9 @@ export const retryCertificate = async (req, res) => {
 
     // ── 1. Find the certificate ──────────────────────────────────────────────
     const certificate = await prisma.certificate.findUnique({
-      where:   { id },
+      where: { id },
       include: {
-        student:      true,
+        student: true,
         organisation: true
       }
     });
@@ -401,9 +431,9 @@ export const retryCertificate = async (req, res) => {
       });
 
       return res.status(200).json({
-        message:     'Certificate was already on the blockchain. Status has been corrected.',
+        message: 'Certificate was already on the blockchain. Status has been corrected.',
         certificate: {
-          id:     certificate.id,
+          id: certificate.id,
           status: onChain.isRevoked ? 'REVOKED' : 'CONFIRMED'
         }
       });
@@ -426,17 +456,17 @@ export const retryCertificate = async (req, res) => {
     await prisma.certificate.update({
       where: { id: certificate.id },
       data: {
-        status:  'CONFIRMED',
+        status: 'CONFIRMED',
         tx_hash: txHash
       }
     });
 
     // ── 7. Return success ────────────────────────────────────────────────────
     return res.status(200).json({
-      message:     'Certificate successfully confirmed on the blockchain',
+      message: 'Certificate successfully confirmed on the blockchain',
       certificate: {
-        id:      certificate.id,
-        status:  'CONFIRMED',
+        id: certificate.id,
+        status: 'CONFIRMED',
         tx_hash: txHash
       }
     });
@@ -453,7 +483,7 @@ export const resendCertificateEmail = async (req, res) => {
 
     // ── 1. Find the certificate ────────────────────────────────────────────
     const certificate = await prisma.certificate.findUnique({
-      where:   { id },
+      where: { id },
       include: { student: true }
     });
 
@@ -489,11 +519,9 @@ export const resendCertificateEmail = async (req, res) => {
     // ── 5. Mark email as PENDING before attempting ─────────────────────────
     await prisma.certificate.update({
       where: { id },
-      data:  { issuance_email_status: 'PENDING' }
+      data: { issuance_email_status: 'PENDING' }
     });
 
-    // ── 6. Regenerate QR code and resend ──────────────────────────────────
-    const qrCodeDataUrl = await generateQRCode(certificate.id);
 
     try {
       await sendCertificateIssuedEmail(
@@ -501,13 +529,12 @@ export const resendCertificateEmail = async (req, res) => {
         certificate.student.full_name,
         certificate.id,
         certificate.cloudinary_url,
-        qrCodeDataUrl
       );
 
       // ── 7. Mark as SENT on success ───────────────────────────────────────
       await prisma.certificate.update({
         where: { id },
-        data:  { issuance_email_status: 'SENT' }
+        data: { issuance_email_status: 'SENT' }
       });
 
       return res.status(200).json({
@@ -520,7 +547,7 @@ export const resendCertificateEmail = async (req, res) => {
       // ── 8. Mark as FAILED again if sending fails ─────────────────────────
       await prisma.certificate.update({
         where: { id },
-        data:  { issuance_email_status: 'FAILED' }
+        data: { issuance_email_status: 'FAILED' }
       });
 
       return res.status(500).json({
@@ -539,13 +566,13 @@ export const getOrgCertificates = async (req, res) => {
     const {
       search,
       status,
-      page  = '1',
+      page = '1',
       limit = '10'
     } = req.query;
 
-    const pageNum  = Math.max(1, parseInt(page));
+    const pageNum = Math.max(1, parseInt(page));
     const limitNum = Math.min(100, Math.max(1, parseInt(limit)));
-    const skip     = (pageNum - 1) * limitNum;
+    const skip = (pageNum - 1) * limitNum;
 
     // ── 1. Build where clause ────────────────────────────────────────────────
     const where = {
@@ -566,7 +593,7 @@ export const getOrgCertificates = async (req, res) => {
       where.student = {
         OR: [
           { full_name: { contains: search.trim(), mode: 'insensitive' } },
-          { email:     { contains: search.trim(), mode: 'insensitive' } },
+          { email: { contains: search.trim(), mode: 'insensitive' } },
           { matricule: { contains: search.trim(), mode: 'insensitive' } }
         ]
       };
@@ -577,34 +604,34 @@ export const getOrgCertificates = async (req, res) => {
       prisma.certificate.findMany({
         where,
         select: {
-          id:                    true,
-          department:            true,
-          program:               true,
-          year_of_entry:         true,
-          year_of_graduation:    true,
-          gpa:                   true,
-          certificate_hash:      true,
-          cloudinary_url:        true,
-          tx_hash:               true,
-          status:                true,
-          revoke_reason:         true,
-          issued_at:             true,
-          revoked_at:            true,
+          id: true,
+          department: true,
+          program: true,
+          year_of_entry: true,
+          year_of_graduation: true,
+          gpa: true,
+          certificate_hash: true,
+          cloudinary_url: true,
+          tx_hash: true,
+          status: true,
+          revoke_reason: true,
+          issued_at: true,
+          revoked_at: true,
           issuance_email_status: true,
           student: {
             select: {
-              id:        true,
+              id: true,
               full_name: true,
               matricule: true,
-              email:     true
+              email: true
             }
           },
           issued_by: {
             select: {
-              id:        true,
+              id: true,
               full_name: true,
               job_title: true,
-              role:      true
+              role: true
             }
           }
         },
@@ -616,9 +643,9 @@ export const getOrgCertificates = async (req, res) => {
     ]);
 
     return res.status(200).json({
-      data:  certificates,
+      data: certificates,
       total,
-      page:  pageNum,
+      page: pageNum,
       limit: limitNum
     });
 
@@ -636,39 +663,39 @@ export const getCertificateById = async (req, res) => {
     const certificate = await prisma.certificate.findUnique({
       where: { id },
       select: {
-        id:                    true,
-        department:            true,
-        program:               true,
-        year_of_entry:         true,
-        year_of_graduation:    true,
-        gpa:                   true,
-        certificate_hash:      true,
-        cloudinary_url:        true,
-        tx_hash:               true,
-        status:                true,
-        revoke_reason:         true,
-        issued_at:             true,
-        revoked_at:            true,
+        id: true,
+        department: true,
+        program: true,
+        year_of_entry: true,
+        year_of_graduation: true,
+        gpa: true,
+        certificate_hash: true,
+        cloudinary_url: true,
+        tx_hash: true,
+        status: true,
+        revoke_reason: true,
+        issued_at: true,
+        revoked_at: true,
         issuance_email_status: true,
         student: {
           select: {
-            id:        true,
+            id: true,
             full_name: true,
             matricule: true,
-            email:     true
+            email: true
           }
         },
         issued_by: {
           select: {
-            id:        true,
+            id: true,
             full_name: true,
             job_title: true,
-            role:      true
+            role: true
           }
         },
         organisation: {
           select: {
-            id:   true,
+            id: true,
             name: true,
             code: true
           }
@@ -696,7 +723,7 @@ export const getCertificateById = async (req, res) => {
 
 export const revokeCertificate = async (req, res) => {
   try {
-    const { id }     = req.params;
+    const { id } = req.params;
     const { reason } = req.body;
 
     // ── 1. Validate reason is provided ───────────────────────────────────────
@@ -706,9 +733,9 @@ export const revokeCertificate = async (req, res) => {
 
     // ── 2. Find the certificate ──────────────────────────────────────────────
     const certificate = await prisma.certificate.findUnique({
-      where:   { id },
+      where: { id },
       include: {
-        student:      true,
+        student: true,
         organisation: true
       }
     });
@@ -760,18 +787,18 @@ export const revokeCertificate = async (req, res) => {
       await tx.certificate.update({
         where: { id },
         data: {
-          status:       'REVOKED',
+          status: 'REVOKED',
           revoke_reason: reason.trim(),
-          revoked_at:   new Date(),
-          tx_hash:      txHash
+          revoked_at: new Date(),
+          tx_hash: txHash
         }
       });
 
       await tx.auditLog.create({
         data: {
-          org_id:      req.user.orgId,
-          actor_id:    req.user.id,
-          action:      'CERTIFICATE_REVOKED',
+          org_id: req.user.orgId,
+          actor_id: req.user.id,
+          action: 'CERTIFICATE_REVOKED',
           description: `Certificate revoked for ${certificate.student.full_name} (${certificate.student.email}) — Reason: ${reason.trim()}`
         }
       });
@@ -787,11 +814,11 @@ export const revokeCertificate = async (req, res) => {
     return res.status(200).json({
       message: 'Certificate revoked successfully',
       data: {
-        id:           certificate.id,
-        status:       'REVOKED',
+        id: certificate.id,
+        status: 'REVOKED',
         revoke_reason: reason.trim(),
-        revoked_at:   new Date(),
-        tx_hash:      txHash
+        revoked_at: new Date(),
+        tx_hash: txHash
       }
     });
 
@@ -811,7 +838,7 @@ export const unrevokeCertificate = async (req, res) => {
     const cert = await prisma.certificate.findUnique({
       where: { id },
       include: {
-        student:      true,
+        student: true,
         organisation: true,
       },
     });
@@ -859,10 +886,10 @@ export const unrevokeCertificate = async (req, res) => {
     await prisma.certificate.update({
       where: { id },
       data: {
-        status:        'CONFIRMED',
+        status: 'CONFIRMED',
         revoke_reason: null,
-        revoked_at:    null,
-        tx_hash:       txHash,
+        revoked_at: null,
+        tx_hash: txHash,
       },
     });
 
@@ -870,9 +897,9 @@ export const unrevokeCertificate = async (req, res) => {
 
     await prisma.auditLog.create({
       data: {
-        org_id:      orgId,
-        actor_id:    callerId,
-        action:      'CERTIFICATE_UNREVOKED',
+        org_id: orgId,
+        actor_id: callerId,
+        action: 'CERTIFICATE_UNREVOKED',
         description: `Certificate ${cert.id} unrevoked for student ${cert.student.full_name} (${cert.student.matricule})`,
       },
     });
@@ -889,9 +916,9 @@ export const unrevokeCertificate = async (req, res) => {
       success: true,
       message: 'Certificate successfully unrevoked',
       data: {
-        certId:    cert.id,
-        status:    'CONFIRMED',
-        tx_hash:   txHash,
+        certId: cert.id,
+        status: 'CONFIRMED',
+        tx_hash: txHash,
       },
     });
   } catch (err) {

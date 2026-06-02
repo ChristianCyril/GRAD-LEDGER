@@ -326,7 +326,7 @@ export const sendAdminCreatedEmail = async (toEmail, adminName, orgName, tempPas
 };
 
 export const sendCertificateIssuedEmail = async (
-  toEmail, studentName, certId, cloudinaryUrl, qrCodeDataUrl
+  toEmail, studentName, certId, cloudinaryUrl
 ) => {
   await transporter.sendMail({
     from: process.env.MAIL_FROM,
@@ -377,12 +377,7 @@ export const sendCertificateIssuedEmail = async (
           </p>
         </body>
       </html>
-    `,
-    attachments: [{
-      filename: 'qrcode.png',
-      content: Buffer.from(qrCodeDataUrl.split(',')[1], 'base64'),
-      contentType: 'image/png'
-    }]
+    `
   });
 };
 
