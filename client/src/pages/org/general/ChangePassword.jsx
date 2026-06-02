@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
-import Header from '../components/Header';
-import OrgSuperAdminSidebar from '../components/OrgSuperAdminSidebar';
+import { useAuth } from '../../../hooks/useAuth';
+import Header from '../../../components/Header';
+import OrgSuperAdminSidebar from '../../../components/OrgSuperAdminSidebar';
 import './ChangePassword.css';
-import useApiPrivate from '../hooks/useApiPrivate';
-import OrgAdminSidebar from '../components/OrgAdminSideBar';
+import useApiPrivate from '../../../hooks/useApiPrivate';
+import OrgAdminSidebar from '../../../components/OrgAdminSideBar';
 
 
 

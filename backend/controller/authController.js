@@ -547,15 +547,23 @@ export const changePassword = async (req, res) => {
       });
     }
 
-    const user = await prisma.orgUser.findUnique({
+    let user;
+
+    if(req.user.role === 'SUPER_ADMIN'){
+      user = await prisma.superAdmin.findUnique({
       where: { id: req.user.id },
     });
+    }else{
+      user = await prisma.orgUser.findUnique({
+      where: { id: req.user.id },
+    });
+    }
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    if (user.status !== "ACTIVE") {
+    if (req.user.role !== 'SUPER_ADMIN' && user.status !== "ACTIVE") {
       return res.status(403).json({ message: "Account is disabled" });
     }
 
@@ -570,12 +578,23 @@ export const changePassword = async (req, res) => {
       });
     }
 
-    await prisma.orgUser.update({
+    if(req.user.role === 'SUPER_ADMIN'){
+       await prisma.superAdmin.update({
       where: { id: user.id },
       data: {
         password_hash: await bcrypt.hash(newPassword, 10),
       },
     });
+    
+    }else{
+       await prisma.orgUser.update({
+      where: { id: user.id },
+      data: {
+        password_hash: await bcrypt.hash(newPassword, 10),
+      },
+    });
+    
+    }
 
     return res.status(200).json({
       message: "Password changed successfully",
