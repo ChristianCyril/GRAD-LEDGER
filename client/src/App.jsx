@@ -20,7 +20,8 @@ import IssueCertificate from "./pages/org/general/IssueCertificate";
 import CertificatesList from "./pages/org/general/CertificatesList";
 import AuditLog from "./pages/org/general/AuditLog";
 import VerifyPage from "./pages/verifier/VerifyPage";
-import ChangePassword from "./pages/ChangePassword";
+import ChangePassword from "./pages/org/general/ChangePassword";
+import ChangePasswordSuperAdmin from "./pages/superAdmin/ChangePasswordSuperAdmin";
 
 export default function App() {
   return (
@@ -57,6 +58,7 @@ export default function App() {
           <Route path='/super-admin/organisations' element={<AllOrganisations/>}/>
           <Route path='/super-admin/organisations/rejected' element={<RejectedOrganisations/>}/>
           <Route path='/super-admin/organisations/:id' element={<ViewOrganisation/>}/>
+          <Route path='/super-admin/change-password' element={<ChangePasswordSuperAdmin/>}/>
         </Route>
       </Route>
     </Routes>

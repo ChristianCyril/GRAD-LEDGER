@@ -616,6 +616,88 @@
   opacity: 1;
 }
 
+/* ─── Autocomplete ───────────────────────────────────── */
+ 
+.ic-field--ac {
+  position: relative;
+}
+ 
+.ic-ac__wrap {
+  position: relative;
+}
+ 
+/* tiny spinner inside the input */
+.ic-ac__spinner {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border-default);
+  border-top-color: var(--color-primary);
+  animation: ic-spin 500ms linear infinite;
+  pointer-events: none;
+}
+ 
+/* dropdown list */
+.ic-ac__list {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 20;
+  background: var(--surface-card);
+  border: 0.5px solid var(--border-default);
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 24px rgba(44, 44, 42, 0.10);
+  overflow: hidden;
+  animation: ic-fade-in 120ms ease both;
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+}
+ 
+.ic-ac__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  padding: 9px var(--space-md);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+ 
+.ic-ac__item:hover,
+.ic-ac__item--active {
+  background: var(--color-primary-light);
+}
+ 
+.ic-ac__name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+ 
+.ic-ac__meta {
+  font-size: 11px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+ 
+/* highlighted match text */
+.ic-ac__mark {
+  background: none;
+  color: var(--color-primary);
+  font-weight: 500;
+}
+ 
 /* ─── Responsive ─────────────────────────────────────── */
 
 @media (max-width: 640px) {

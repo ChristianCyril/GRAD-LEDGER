@@ -11,18 +11,19 @@ import OrgAdminSidebar from '../../../components/OrgAdminSideBar';
 const TOTAL_STEPS = 3;
 
 const FIELD_META = {
-  full_name: { label: 'Full name', type: 'text', placeholder: 'e.g. John Doe' },
-  matricule: { label: 'Matricule', type: 'text', placeholder: 'e.g. UY1-2021-0001' },
-  email: { label: 'Student email', type: 'email', placeholder: 'student@example.com' },
-  department: { label: 'Department', type: 'text', placeholder: 'e.g. Computer Science' },
-  program: { label: 'Program', type: 'text', placeholder: 'e.g. B.Sc. Software Engineering' },
-  year_of_entry: { label: 'Year of entry', type: 'number', placeholder: 'e.g. 2019' },
+  full_name:          { label: 'Full name',         type: 'text',   placeholder: 'e.g. John Doe' },
+  matricule:          { label: 'Matricule',          type: 'text',   placeholder: 'e.g. UY1-2021-0001' },
+  email:              { label: 'Student email',      type: 'email',  placeholder: 'student@example.com' },
+  department:         { label: 'Department',         type: 'text',   placeholder: 'e.g. Computer Science' },
+  program:            { label: 'Program',            type: 'text',   placeholder: 'e.g. B.Sc. Software Engineering' },
+  year_of_entry:      { label: 'Year of entry',      type: 'number', placeholder: 'e.g. 2019' },
   year_of_graduation: { label: 'Year of graduation', type: 'number', placeholder: 'e.g. 2023' },
-  gpa: { label: 'GPA', type: 'number', placeholder: 'e.g. 3.75', step: '0.01', min: '0', max: '4' },
+  gpa:                { label: 'GPA',                type: 'number', placeholder: 'e.g. 3.75', step: '0.01', min: '0', max: '4' },
 };
 
+const AUTOCOMPLETE_FIELDS = new Set(['full_name', 'matricule', 'email']);
 const STEP_1_FIELDS = ['full_name', 'matricule', 'email', 'department', 'program'];
-const STEP_1_ROW2 = ['year_of_entry', 'year_of_graduation', 'gpa'];
+const STEP_1_ROW2   = ['year_of_entry', 'year_of_graduation', 'gpa'];
 
 const emptyForm = () => ({
   full_name: '', matricule: '', email: '',
@@ -34,31 +35,196 @@ const emptyForm = () => ({
 
 const isStep2Valid = (file) => file !== null;
 
-/* ─── Sub-components ─────────────────────────────────── */
+/* ─── Icons ─────────────────────────────────────────── */
+
+function CheckIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+      <path d="M2.5 7L5.5 10L11.5 4" stroke="currentColor" strokeWidth="2"
+        strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
+function Spinner() {
+  return <span className="ic-spinner" aria-label="Loading"/>;
+}
+
+function UploadIcon() {
+  return (
+    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+      <path d="M16 22V10M16 10L11 15M16 10L21 15" stroke="currentColor" strokeWidth="1.5"
+        strokeLinecap="round" strokeLinejoin="round"/>
+      <rect x="4" y="24" width="24" height="4" rx="2" fill="currentColor" opacity=".15"/>
+    </svg>
+  );
+}
+
+function FileIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+      <path d="M5 2h7l5 5v11a1 1 0 01-1 1H5a1 1 0 01-1-1V3a1 1 0 011-1z"
+        stroke="currentColor" strokeWidth="1.2"/>
+      <path d="M12 2v5h5" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
+function WarningIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+      <path d="M9 2L16.5 15H1.5L9 2z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/>
+      <path d="M9 8v3M9 13v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+function SuccessIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+      <circle cx="9" cy="9" r="7.5" stroke="currentColor" strokeWidth="1.4"/>
+      <path d="M5.5 9l2.5 2.5 4.5-5" stroke="currentColor" strokeWidth="1.5"
+        strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
+/* ─── Step indicator ─────────────────────────────────── */
 
 function StepIndicator({ current }) {
   const steps = ['Student details', 'Certificate PDF', 'Confirm & issue'];
   return (
     <div className="ic-steps">
       {steps.map((label, i) => {
-        const num = i + 1;
-        const done = num < current;
+        const num    = i + 1;
+        const done   = num < current;
         const active = num === current;
         return (
-          <div key={num} className={`ic-step ${active ? 'ic-step--active' : ''} ${done ? 'ic-step--done' : ''}`}>
+          <div key={num}
+            className={`ic-step ${active ? 'ic-step--active' : ''} ${done ? 'ic-step--done' : ''}`}>
             <div className="ic-step__bubble">
-              {done
-                ? <CheckIcon />
-                : <span>{num}</span>}
+              {done ? <CheckIcon /> : <span>{num}</span>}
             </div>
             <span className="ic-step__label">{label}</span>
-            {i < steps.length - 1 && <div className="ic-step__connector" />}
+            {i < steps.length - 1 && <div className="ic-step__connector"/>}
           </div>
         );
       })}
     </div>
   );
 }
+
+/* ─── Autocomplete field ─────────────────────────────── */
+/*
+  Wraps a regular text/email/number input.
+  When `suggestions` is non-empty it renders a dropdown beneath the input.
+  Selecting a row calls onSelect(student) — the parent fills all three fields at once.
+  Keyboard: ArrowUp/Down navigate, Enter/Tab select, Escape closes.
+*/
+
+function AutocompleteField({ name, value, onChange, error, suggestions = [], onSelect, searching }) {
+  const meta        = FIELD_META[name];
+  const [open, setOpen] = useState(false);
+  const [cursor, setCursor] = useState(-1);
+  const wrapRef     = useRef(null);
+
+  /* Close when clicking outside */
+  useEffect(() => {
+    const handler = (e) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  /* Open whenever we have suggestions */
+  useEffect(() => {
+    setOpen(suggestions.length > 0);
+    setCursor(-1);
+  }, [suggestions]);
+
+  const handleKeyDown = (e) => {
+    if (!open) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setCursor(c => Math.min(c + 1, suggestions.length - 1));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setCursor(c => Math.max(c - 1, 0));
+    } else if ((e.key === 'Enter' || e.key === 'Tab') && cursor >= 0) {
+      e.preventDefault();
+      onSelect(suggestions[cursor]);
+      setOpen(false);
+    } else if (e.key === 'Escape') {
+      setOpen(false);
+    }
+  };
+
+  const handleSelect = (student) => {
+    onSelect(student);
+    setOpen(false);
+  };
+
+  /* Highlight matching substring */
+  const highlight = (text, query) => {
+    if (!query) return text;
+    const idx = text.toLowerCase().indexOf(query.toLowerCase());
+    if (idx === -1) return text;
+    return (
+      <>
+        {text.slice(0, idx)}
+        <mark className="ic-ac__mark">{text.slice(idx, idx + query.length)}</mark>
+        {text.slice(idx + query.length)}
+      </>
+    );
+  };
+
+  return (
+    <div ref={wrapRef} className={`ic-field ic-field--ac ${error ? 'ic-field--error' : ''}`}>
+      <label className="ic-field__label label" htmlFor={`ic-${name}`}>{meta.label}</label>
+      <div className="ic-ac__wrap">
+        <input
+          id={`ic-${name}`}
+          className="ic-field__input"
+          type={meta.type}
+          placeholder={meta.placeholder}
+          value={value}
+          onChange={(e) => { onChange(name, e.target.value); }}
+          onKeyDown={handleKeyDown}
+          onFocus={() => suggestions.length > 0 && setOpen(true)}
+          autoComplete="off"
+        />
+        {searching && <span className="ic-ac__spinner"/>}
+      </div>
+
+      {open && (
+        <ul className="ic-ac__list" role="listbox">
+          {suggestions.map((s, i) => (
+            <li
+              key={s.id}
+              className={`ic-ac__item ${cursor === i ? 'ic-ac__item--active' : ''}`}
+              role="option"
+              aria-selected={cursor === i}
+              onMouseDown={() => handleSelect(s)}  /* mousedown fires before blur */
+              onMouseEnter={() => setCursor(i)}
+            >
+              <span className="ic-ac__name">
+                {highlight(s.full_name, value)}
+              </span>
+              <span className="ic-ac__meta text-mono">
+                {s.matricule}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {error && <span className="ic-field__error">{error}</span>}
+    </div>
+  );
+}
+
+/* ─── Plain field (non-autocomplete) ────────────────── */
 
 function FieldInput({ name, value, onChange, error }) {
   const meta = FIELD_META[name];
@@ -91,98 +257,85 @@ function SummaryRow({ label, value, mono }) {
   );
 }
 
-/* ─── Icons ─────────────────────────────────────────── */
-
-function CheckIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-      <path d="M2.5 7L5.5 10L11.5 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function Spinner() {
-  return <span className="ic-spinner" aria-label="Loading" />;
-}
-
-function UploadIcon() {
-  return (
-    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-      <path d="M16 22V10M16 10L11 15M16 10L21 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      <rect x="4" y="24" width="24" height="4" rx="2" fill="currentColor" opacity=".15" />
-    </svg>
-  );
-}
-
-function FileIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-      <path d="M5 2h7l5 5v11a1 1 0 01-1 1H5a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="currentColor" strokeWidth="1.2" />
-      <path d="M12 2v5h5" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function WarningIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-      <path d="M9 2L16.5 15H1.5L9 2z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
-      <path d="M9 8v3M9 13v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function SuccessIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-      <circle cx="9" cy="9" r="7.5" stroke="currentColor" strokeWidth="1.4" />
-      <path d="M5.5 9l2.5 2.5 4.5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
 /* ─── Main component ─────────────────────────────────── */
 
 export default function IssueCertificate() {
-  const [step, setStep] = useState(1);
-  const [form, setForm] = useState(emptyForm());
-  const [errors, setErrors] = useState({});
-  const [file, setFile] = useState(null);
-  const [org, setOrg] = useState(null);
-  const [fileErr, setFileErr] = useState('');
-  const [drag, setDrag] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [toast, setToast] = useState(null);  // { type: 'success'|'warning'|'error', message }
+  const [step,        setStep]        = useState(1);
+  const [form,        setForm]        = useState(emptyForm());
+  const [errors,      setErrors]      = useState({});
+  const [file,        setFile]        = useState(null);
+  const [org,         setOrg]         = useState(null);
+  const [fileErr,     setFileErr]     = useState('');
+  const [drag,        setDrag]        = useState(false);
+  const [loading,     setLoading]     = useState(false);
+  const [toast,       setToast]       = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const api = useApiPrivate()
-  const { auth } = useAuth();
-  const user = auth.user
+
+  /* Autocomplete state */
+  const [suggestions, setSuggestions] = useState([]);
+  const [acQuery,     setAcQuery]     = useState('');   // last query sent
+  const [searching,   setSearching]   = useState(false);
+  const searchTimer = useRef(null);
+  const [activeAcField, setActiveAcField] = useState('');
+
+  const api        = useApiPrivate();
+  const { auth }   = useAuth();
+  const user       = auth.user;
   const fileInputRef = useRef(null);
 
-
+  /* Fetch org */
   useEffect(() => {
-    async function fetchAll() {
-      try {
-        const orgRes = await api.get('/api/organisations/profile')
-        setOrg(orgRes.data.data);
-      } catch (err) {
-        console.error(err)
-      }
-    }
-    fetchAll();
+    api.get('/api/organisations/profile')
+      .then(r => setOrg(r.data.data))
+      .catch(console.error);
   }, [api]);
 
+  /* ── Autocomplete search ── */
+  const runSearch = useCallback(async (q) => {
+    if (q.trim().length < 2) { setSuggestions([]); return; }
+    setSearching(true);
+    try {
+      const res = await api.get('/api/students/search', { params: { q } });
+      setSuggestions(res.data.data ?? []);
+    } catch {
+      setSuggestions([]);
+    } finally {
+      setSearching(false);
+    }
+  }, [api]);
 
-  /* Field change */
+  /* ── Field change ── */
   const handleChange = useCallback((name, value) => {
-    setForm((f) => ({ ...f, [name]: value }));
-    setErrors((e) => ({ ...e, [name]: '' }));
+    setForm(f => ({ ...f, [name]: value }));
+    setErrors(e => ({ ...e, [name]: '' }));
+
+    /* Trigger autocomplete only for the three identity fields */
+    if (AUTOCOMPLETE_FIELDS.has(name)) {
+      setActiveAcField(name); 
+      setAcQuery(value);
+      clearTimeout(searchTimer.current);
+      searchTimer.current = setTimeout(() => runSearch(value), 300);
+    }
+  }, [runSearch]);
+
+  /* ── Select suggestion ── fills all three identity fields at once ── */
+  const handleSelect = useCallback((student) => {
+    setForm(f => ({
+      ...f,
+      full_name: student.full_name,
+      matricule: student.matricule,
+      email:     student.email,
+    }));
+    setErrors(e => ({ ...e, full_name: '', matricule: '', email: '' }));
+    setSuggestions([]);
+    setAcQuery('');
+    setActiveAcField('');
   }, []);
 
-  /* Step 1 validation */
+  /* ── Step 1 validation ── */
   const validateStep1 = () => {
     const newErrors = {};
-    [...STEP_1_FIELDS, ...STEP_1_ROW2].forEach((k) => {
+    [...STEP_1_FIELDS, ...STEP_1_ROW2].forEach(k => {
       if (!String(form[k]).trim()) newErrors[k] = 'This field is required';
     });
     if (form.gpa && (parseFloat(form.gpa) < 0 || parseFloat(form.gpa) > 4))
@@ -195,12 +348,12 @@ export default function IssueCertificate() {
     return Object.keys(newErrors).length === 0;
   };
 
-  /* File handling */
+  /* ── File handling ── */
   const acceptFile = (f) => {
     setFileErr('');
     if (!f) return;
     if (f.type !== 'application/pdf') { setFileErr('Only PDF files are accepted'); return; }
-    if (f.size > 10 * 1024 * 1024) { setFileErr('File must be under 10 MB'); return; }
+    if (f.size > 10 * 1024 * 1024)   { setFileErr('File must be under 10 MB'); return; }
     setFile(f);
   };
 
@@ -209,21 +362,23 @@ export default function IssueCertificate() {
     acceptFile(e.dataTransfer.files[0]);
   };
 
-  /* Navigation */
+  /* ── Navigation ── */
   const goNext = () => {
     if (step === 1 && !validateStep1()) return;
     if (step === 2 && !isStep2Valid(file)) { setFileErr('Please upload the certificate PDF'); return; }
-    setStep((s) => s + 1);
+    setSuggestions([]); // close any open dropdown
+    setStep(s => s + 1);
   };
-  const goBack = () => setStep((s) => s - 1);
+  const goBack = () => setStep(s => s - 1);
 
-  /* Reset */
+  /* ── Reset ── */
   const reset = () => {
     setStep(1); setForm(emptyForm()); setErrors({});
     setFile(null); setFileErr(''); setToast(null);
+    setSuggestions([]); setAcQuery('');
   };
 
-  /* Submit */
+  /* ── Submit ── */
   const handleSubmit = async () => {
     setLoading(true);
     setToast(null);
@@ -242,7 +397,7 @@ export default function IssueCertificate() {
       } else if (res.status === 202) {
         setToast({
           type: 'warning',
-          message: 'Certificate recorded but blockchain confirmation is pending. Use the retry option from the certificates list.',
+          message: 'Certificate recorded but confirmation is pending. Use the retry option from the certificates list.',
         });
       }
     } catch (err) {
@@ -256,17 +411,15 @@ export default function IssueCertificate() {
   /* ── Render ── */
   return (
     <div className="ic-wrapper">
-       {user.role === 'ORG_ADMIN'?
-            <OrgAdminSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} org={org} />:
-            <OrgSuperAdminSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} org={org} />
-            }
-            
+      {user.role === 'ORG_ADMIN'
+        ? <OrgAdminSidebar    open={sidebarOpen} onClose={() => setSidebarOpen(false)} org={org}/>
+        : <OrgSuperAdminSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} org={org}/>
+      }
+
       <div className="ic-main">
-        <Header org={org} user={user} setSidebarOpen={setSidebarOpen} />
+        <Header org={org} user={user} setSidebarOpen={setSidebarOpen}/>
+
         <div className="ic-page">
-
-          {/* Top bar */}
-
           <header className="ic-header">
             <div className="ic-header__eyebrow label">Certificates</div>
             <h1 className="ic-header__title">Issue certificate</h1>
@@ -274,28 +427,54 @@ export default function IssueCertificate() {
           </header>
 
           <div className="ic-card">
-            <StepIndicator current={step} />
+            <StepIndicator current={step}/>
 
             <div className="ic-body">
+
               {/* ── Step 1 ── */}
               {step === 1 && (
                 <div className="ic-pane" key="step1">
                   <h2 className="ic-pane__title">Student details</h2>
-                  <p className="ic-pane__sub">Enter the student's personal and academic information.</p>
+                  <p className="ic-pane__sub">
+                    Enter the student's details, or start typing to find an existing student.
+                  </p>
 
                   <div className="ic-fields ic-fields--2col">
-                    {STEP_1_FIELDS.map((name) => (
-                      <FieldInput key={name} name={name} value={form[name]}
-                        onChange={handleChange} error={errors[name]} />
-                    ))}
+                    {STEP_1_FIELDS.map(name =>
+                      AUTOCOMPLETE_FIELDS.has(name) ? (
+                        <AutocompleteField
+                          key={name}
+                          name={name}
+                          value={form[name]}
+                          onChange={handleChange}
+                          error={errors[name]}
+                          suggestions={activeAcField === name ? suggestions : []}
+                          onSelect={handleSelect}
+                          searching={searching && acQuery === form[name]}
+                        />
+                      ) : (
+                        <FieldInput
+                          key={name}
+                          name={name}
+                          value={form[name]}
+                          onChange={handleChange}
+                          error={errors[name]}
+                        />
+                      )
+                    )}
                   </div>
 
-                  <div className="ic-divider" />
+                  <div className="ic-divider"/>
 
                   <div className="ic-fields ic-fields--3col">
-                    {STEP_1_ROW2.map((name) => (
-                      <FieldInput key={name} name={name} value={form[name]}
-                        onChange={handleChange} error={errors[name]} />
+                    {STEP_1_ROW2.map(name => (
+                      <FieldInput
+                        key={name}
+                        name={name}
+                        value={form[name]}
+                        onChange={handleChange}
+                        error={errors[name]}
+                      />
                     ))}
                   </div>
                 </div>
@@ -325,10 +504,9 @@ export default function IssueCertificate() {
                       className="ic-dropzone__input"
                       onChange={(e) => acceptFile(e.target.files[0])}
                     />
-
                     {!file ? (
                       <div className="ic-dropzone__empty">
-                        <span className="ic-dropzone__icon"><UploadIcon /></span>
+                        <span className="ic-dropzone__icon"><UploadIcon/></span>
                         <p className="ic-dropzone__prompt">
                           Drag and drop a PDF here, or <span className="ic-dropzone__link">browse</span>
                         </p>
@@ -336,7 +514,7 @@ export default function IssueCertificate() {
                       </div>
                     ) : (
                       <div className="ic-dropzone__preview">
-                        <span className="ic-dropzone__file-icon"><FileIcon /></span>
+                        <span className="ic-dropzone__file-icon"><FileIcon/></span>
                         <div className="ic-dropzone__file-info">
                           <span className="ic-dropzone__file-name">{file.name}</span>
                           <span className="ic-dropzone__file-size text-muted">
@@ -350,23 +528,16 @@ export default function IssueCertificate() {
                             rel="noopener noreferrer"
                             className="ic-link"
                             onClick={(e) => e.stopPropagation()}
-                          >
-                            Preview
-                          </a>
+                          >Preview</a>
                           <button
                             className="ic-btn ic-btn--ghost ic-btn--sm"
                             onClick={(e) => { e.stopPropagation(); setFile(null); }}
-                          >
-                            Remove
-                          </button>
+                          >Remove</button>
                         </div>
                       </div>
                     )}
                   </div>
-
-                  {fileErr && (
-                    <p className="ic-field__error ic-field__error--standalone">{fileErr}</p>
-                  )}
+                  {fileErr && <p className="ic-field__error ic-field__error--standalone">{fileErr}</p>}
                 </div>
               )}
 
@@ -379,44 +550,39 @@ export default function IssueCertificate() {
                   <div className="ic-summary">
                     <div className="ic-summary__section">
                       <span className="ic-summary__section-title label">Student</span>
-                      <SummaryRow label="Full name" value={form.full_name} />
-                      <SummaryRow label="Matricule" value={form.matricule} mono />
-                      <SummaryRow label="Email" value={form.email} />
+                      <SummaryRow label="Full name" value={form.full_name}/>
+                      <SummaryRow label="Matricule" value={form.matricule} mono/>
+                      <SummaryRow label="Email"     value={form.email}/>
                     </div>
-
                     <div className="ic-summary__section">
                       <span className="ic-summary__section-title label">Academic record</span>
-                      <SummaryRow label="Department" value={form.department} />
-                      <SummaryRow label="Program" value={form.program} />
-                      <SummaryRow label="Year of entry" value={form.year_of_entry} />
-                      <SummaryRow label="Year of graduation" value={form.year_of_graduation} />
-                      <SummaryRow label="GPA" value={form.gpa} />
+                      <SummaryRow label="Department"         value={form.department}/>
+                      <SummaryRow label="Program"            value={form.program}/>
+                      <SummaryRow label="Year of entry"      value={form.year_of_entry}/>
+                      <SummaryRow label="Year of graduation" value={form.year_of_graduation}/>
+                      <SummaryRow label="GPA"                value={form.gpa}/>
                     </div>
-
                     <div className="ic-summary__section">
                       <span className="ic-summary__section-title label">Certificate file</span>
                       <div className="ic-summary__row">
                         <span className="ic-summary__key label">File</span>
                         <span className="ic-summary__val ic-summary__file">
-                          <FileIcon />
+                          <FileIcon/>
                           <span>{file?.name}</span>
                           <a
                             href={file ? URL.createObjectURL(file) : '#'}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="ic-link"
-                          >
-                            Preview
-                          </a>
+                          >Preview</a>
                         </span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Warning banner if blockchain pending */}
                   {toast?.type === 'warning' && (
                     <div className="ic-banner ic-banner--warning" role="alert">
-                      <WarningIcon />
+                      <WarningIcon/>
                       <p>{toast.message}</p>
                     </div>
                   )}
@@ -440,24 +606,21 @@ export default function IssueCertificate() {
                   </button>
                 )}
                 {step === TOTAL_STEPS && (
-                  <button
-                    className="ic-btn ic-btn--primary"
-                    onClick={handleSubmit}
-                    disabled={loading}
-                  >
-                    {loading ? <><Spinner /> Issuing…</> : 'Issue certificate'}
+                  <button className="ic-btn ic-btn--primary" onClick={handleSubmit} disabled={loading}>
+                    {loading ? <><Spinner/> Issuing…</> : 'Issue certificate'}
                   </button>
                 )}
               </div>
             </div>
           </div>
+
           {/* Toast */}
           {toast && (
             <div className={`ic-toast ic-toast--${toast.type}`} role="alert">
               <span className="ic-toast__icon">
-                {toast.type === 'success' && <SuccessIcon />}
-                {toast.type === 'warning' && <WarningIcon />}
-                {toast.type === 'error' && <WarningIcon />}
+                {toast.type === 'success' && <SuccessIcon/>}
+                {toast.type === 'warning' && <WarningIcon/>}
+                {toast.type === 'error'   && <WarningIcon/>}
               </span>
               <span className="ic-toast__msg">{toast.message}</span>
               <button className="ic-toast__close" onClick={() => setToast(null)} aria-label="Dismiss">×</button>
@@ -466,6 +629,5 @@ export default function IssueCertificate() {
         </div>
       </div>
     </div>
-
   );
 }
