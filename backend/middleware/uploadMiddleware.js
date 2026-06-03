@@ -1,4 +1,7 @@
 import multer from 'multer';
+import fs from 'fs/promises';
+
+await fs.mkdir('uploads', { recursive: true });
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, 'uploads/'),
