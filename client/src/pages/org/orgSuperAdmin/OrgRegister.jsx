@@ -312,7 +312,7 @@ export default function OrgRegister() {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 
-      navigate('/register/success');
+      navigate('/org-login');
     } catch (err) {
       const msg = err.response?.data?.message;
       if (err.response?.status === 409) {

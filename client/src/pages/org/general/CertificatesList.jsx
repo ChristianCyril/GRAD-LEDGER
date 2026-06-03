@@ -219,7 +219,7 @@ const RevokeModal = memo(function RevokeModal({ onCancel, onConfirm }) {
             disabled={loading}
           >
             {loading
-              ? <><Spinner size={13} light /> Revoking…</>
+              ? <><Spinner size={13} /> Revoking…</>
               : 'Confirm revocation'}
           </button>
         </div>
