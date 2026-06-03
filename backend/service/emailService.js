@@ -1,14 +1,10 @@
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
-const transporter = nodemailer.createTransport({
-  host: process.env.MAIL_HOST,
-  port: Number(process.env.MAIL_PORT),
-  auth: { user: process.env.MAIL_USER, pass: process.env.MAIL_PASS }
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const sendPasswordResetEmail = async (toEmail, resetToken) => {
   const resetLink = `${process.env.CLIENT_URL}/reset-password?token=${resetToken}`;
-  await transporter.sendMail({
+  await resend.sendMail({
     from: process.env.MAIL_FROM,
     to: toEmail,
     subject: 'Reset Your Password — Grad-Ledger',
@@ -100,7 +96,7 @@ export const sendPasswordResetEmail = async (toEmail, resetToken) => {
 // ─── REGISTRATION RECEIVED (to Org Super Admin) ───────────────────────────────
 
 export const sendRegistrationReceivedEmail = async (toEmail, orgName) => {
-  await transporter.sendMail({
+  await resend.sendMail({
     from: process.env.MAIL_FROM,
     to: toEmail,
     subject: 'Registration Received — Grad-Ledger',
@@ -125,7 +121,7 @@ export const sendRegistrationReceivedEmail = async (toEmail, orgName) => {
 // ─── NEW REGISTRATION NOTIFICATION (to Super Admin) ──────────────────────────
 
 export const sendNewRegistrationNotificationEmail = async () => {
-  await transporter.sendMail({
+  await resend.sendMail({
     from: process.env.MAIL_FROM,
     to: process.env.SUPER_ADMIN_EMAIL,
     subject: 'New Organisation Registration Pending — Grad-Ledger',
@@ -164,7 +160,7 @@ export const sendNewRegistrationNotificationEmail = async () => {
 // ─── ORGANISATION APPROVED (to Org Super Admin) ───────────────────────────────
 
 export const sendOrgApprovedEmail = async (toEmail, orgName, loginEmail) => {
-  await transporter.sendMail({
+  await resend.sendMail({
     from: process.env.MAIL_FROM,
     to: toEmail,
     subject: 'Your Registration Has Been Approved — Grad-Ledger',
@@ -211,7 +207,7 @@ export const sendOrgApprovedEmail = async (toEmail, orgName, loginEmail) => {
 // ─── ORGANISATION REJECTED (to Org Super Admin) ───────────────────────────────
 
 export const sendOrgRejectedEmail = async (toEmail, orgName, reason) => {
-  await transporter.sendMail({
+  await resend.sendMail({
     from: process.env.MAIL_FROM,
     to: toEmail,
     subject: 'Your Registration Was Not Approved — Grad-Ledger',
@@ -244,7 +240,7 @@ export const sendOrgRejectedEmail = async (toEmail, orgName, reason) => {
 // ─── ORGANISATION DISABLED (to Org Super Admin) ───────────────────────────────
 
 export const sendOrgDisabledEmail = async (toEmail, orgName) => {
-  await transporter.sendMail({
+  await resend.sendMail({
     from: process.env.MAIL_FROM,
     to: toEmail,
     subject: 'Your Organisation Has Been Suspended — Grad-Ledger',
@@ -280,7 +276,7 @@ export const sendOrgDisabledEmail = async (toEmail, orgName) => {
 };
 
 export const sendAdminCreatedEmail = async (toEmail, adminName, orgName, tempPassword) => {
-  await transporter.sendMail({
+  await resend.sendMail({
     from: process.env.MAIL_FROM,
     to: toEmail,
     subject: `Your Admin Account — ${orgName} on Block-Ledger`,
@@ -328,7 +324,7 @@ export const sendAdminCreatedEmail = async (toEmail, adminName, orgName, tempPas
 export const sendCertificateIssuedEmail = async (
   toEmail, studentName, certId, cloudinaryUrl
 ) => {
-  await transporter.sendMail({
+  await resend.sendMail({
     from: process.env.MAIL_FROM,
     to: toEmail,
     subject: 'Your Certificate is Ready Grad-Ledger',
@@ -382,7 +378,7 @@ export const sendCertificateIssuedEmail = async (
 };
 
 export const sendRevocationEmail = async (toEmail, studentName, orgName) => {
-  await transporter.sendMail({
+  await resend.sendMail({
     from: process.env.MAIL_FROM,
     to: toEmail,
     subject: 'Certificate Revocation Notice — Block-Ledger',
@@ -445,7 +441,7 @@ export const sendRevocationEmail = async (toEmail, studentName, orgName) => {
 };
 
 export const sendCertificateUnrevokedEmail = async (toEmail, studentName, orgName) => {
-  await transporter.sendMail({
+  await resend.sendMail({
     from: process.env.MAIL_FROM,
     to: toEmail,
     subject: 'Certificate Reinstated — Block-Ledger',
