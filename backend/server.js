@@ -11,7 +11,7 @@ import certificateRoutes from './routes/certificateRoutes.js'
 import auditRoutes from './routes/auditRoutes.js'
 import verificationRoutes from './routes/verificationRoute.js'
 import studentRoutes from './routes/studentRoutes.js'
-
+import { cleanupExpiredTokens } from './service/cleanupTokens.js';
 
 const app = express();
 const PORT = process.env.PORT
@@ -30,6 +30,8 @@ app.use('/api/audit',auditRoutes)
 app.use('/api/verify',verificationRoutes)
 app.use('/api/students',studentRoutes)
 
-app.listen(PORT,()=>{
+app.listen(PORT,async()=>{
   console.log(`GRAD-LEDGER Server running on pot ${PORT}`)
+  await cleanupExpiredTokens();
+  setInterval(cleanupExpiredTokens, 24 * 60 * 60 * 1000);
 })
