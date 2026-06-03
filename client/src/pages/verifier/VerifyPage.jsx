@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link} from 'react-router-dom';
 import { api } from '../../api/axios';
 import './VerifyPage.css';
 
@@ -486,7 +486,12 @@ export default function VerifyPage() {
             <span className="vp-logo__mark">⬡</span>
             <span className="vp-logo__text">Grad-Ledger</span>
           </div>
-          <span className="vp-header__tag">Certificate verification</span>
+          <div>
+            <Link to="/" className="vp-topbar__link">
+              Home
+            </Link>
+            <span className="vp-header__tag">Certificate verification</span>
+          </div>
         </div>
       </header>
 
