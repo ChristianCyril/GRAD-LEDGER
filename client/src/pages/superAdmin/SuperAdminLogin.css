@@ -1,0 +1,315 @@
+/* ─── Page ───────────────────────────────────────────── */
+
+.sa-login-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--gray-900);
+}
+
+
+/* ─── Top bar ────────────────────────────────────────── */
+
+.sa-topbar {
+  height: var(--topbar-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-xl);
+  border-bottom: 0.5px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+.sa-logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.sa-logo__mark {
+  font-size: 20px;
+  color: var(--teal-200);
+  line-height: 1;
+}
+
+.sa-logo__text {
+  font-size: 15px;
+  font-weight: 500;
+  color: #fff;
+  letter-spacing: -0.01em;
+}
+
+.sa-topbar__badge {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--gray-400);
+}
+
+
+/* ─── Center area ────────────────────────────────────── */
+
+.sa-center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2xl) var(--space-base);
+  gap: var(--space-lg);
+}
+
+
+/* ─── Card ───────────────────────────────────────────── */
+
+.sa-card {
+  width: 100%;
+  max-width: 380px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 0.5px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-lg);
+  padding: var(--space-2xl) var(--space-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+}
+
+
+/* ─── Card icon ──────────────────────────────────────── */
+
+.sa-card__icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-lg);
+  background: rgba(29, 158, 117, 0.15);
+  color: var(--teal-200);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+/* ─── Card header ────────────────────────────────────── */
+
+.sa-card__header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.sa-card__title {
+  font-size: 22px;
+  font-weight: 500;
+  color: #fff;
+  letter-spacing: -0.01em;
+}
+
+.sa-card__sub {
+  font-size: 13px;
+  color: var(--gray-400);
+  line-height: 1.5;
+}
+
+
+/* ─── Form ───────────────────────────────────────────── */
+
+.sa-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-base);
+}
+
+
+/* ─── Fields ─────────────────────────────────────────── */
+
+.sa-form .field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.sa-form .field__label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sa-form .field__label {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.sa-form .field__forgot {
+  font-size: 12px;
+  color: var(--gray-400);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.sa-form .field__forgot:hover {
+  color: var(--teal-200);
+}
+
+.sa-form .field__input {
+  height: 40px;
+  width: 100%;
+  padding: 0 var(--space-md);
+  background: rgba(255, 255, 255, 0.06);
+  border: 0.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-family: var(--font-sans);
+  color: #fff;
+  outline: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.sa-form .field__input::placeholder {
+  color: rgba(255, 255, 255, 0.25);
+}
+
+.sa-form .field__input:hover:not(:disabled) {
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+.sa-form .field__input:focus {
+  border-color: var(--teal-400);
+  box-shadow: 0 0 0 3px rgba(29, 158, 117, 0.18);
+}
+
+.sa-form .field__input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Password wrapper */
+.sa-form .field__input-wrapper {
+  position: relative;
+}
+
+.sa-form .field__input--with-action {
+  padding-right: 40px;
+}
+
+.sa-form .field__toggle {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  width: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.sa-form .field__toggle:hover {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+
+/* ─── Error banner ───────────────────────────────────── */
+
+.sa-error {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 10px var(--space-md);
+  background: rgba(226, 75, 74, 0.12);
+  color: #F28B8A;
+  border: 0.5px solid rgba(226, 75, 74, 0.25);
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+
+/* ─── Submit button ──────────────────────────────────── */
+
+.sa-btn {
+  height: 42px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  background: var(--teal-400);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 500;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  margin-top: var(--space-xs);
+  transition: background var(--transition-fast), opacity var(--transition-fast);
+}
+
+.sa-btn:hover:not(:disabled) {
+  background: var(--teal-600);
+}
+
+.sa-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+
+/* ─── Spinner ────────────────────────────────────────── */
+
+.sa-login-page .spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+
+/* ─── Footer ─────────────────────────────────────────── */
+
+.sa-footer {
+  font-size: 13px;
+  color: var(--gray-400);
+  text-align: center;
+}
+
+.sa-footer a {
+  color: var(--teal-200);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color var(--transition-fast);
+}
+
+.sa-footer a:hover {
+  color: var(--teal-100);
+}
+
+
+/* ─── Responsive ─────────────────────────────────────── */
+
+@media (max-width: 480px) {
+  .sa-topbar {
+    padding: 0 var(--space-base);
+  }
+
+  .sa-topbar__badge {
+    display: none;
+  }
+
+  .sa-card {
+    padding: var(--space-xl) var(--space-base);
+  }
+}

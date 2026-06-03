@@ -1,0 +1,492 @@
+/* ─── AuditLog.css ──────────────────────────────────────────────────────────────
+   All selectors scoped to .al-* to avoid collisions.
+   Uses only tokens from the project design system (index.css).
+   ──────────────────────────────────────────────────────────────────────────── */
+
+/* ─── Layout ─────────────────────────────────────────── */
+
+.al-wrapper {
+  display: flex;
+  min-height: 100vh;
+  background: var(--surface-page);
+}
+
+.al-main {
+  margin-left: var(--sidebar-width);
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── Page ───────────────────────────────────────────── */
+
+.al-page {
+  padding: var(--space-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  max-width: var(--content-max-width);
+  width: 100%;
+}
+
+.al-page__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.al-page__title {
+  font-size: 24px;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.al-page__scope {
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.al-page__count {
+  font-size: 13px;
+  padding-bottom: 3px;
+}
+
+/* ─── Filters card ───────────────────────────────────── */
+
+.al-filters-card {
+  background: var(--surface-card);
+  border: 0.5px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: var(--space-base) var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.al-filters__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  color: var(--text-muted);
+}
+
+.al-filters__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-base);
+}
+
+.al-filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.al-filter-field__label {
+  display: block;
+}
+
+/* ─── Clear button ───────────────────────────────────── */
+
+.al-clear-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: auto;
+  background: none;
+  border: none;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: var(--font-sans);
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radius-md);
+  transition: color var(--transition-fast), background var(--transition-fast);
+}
+
+.al-clear-btn:hover {
+  color: var(--color-danger-accent);
+  background: var(--color-danger-bg);
+}
+
+/* ─── Select & input ─────────────────────────────────── */
+
+.al-select,
+.al-input {
+  width: 100%;
+  padding: 9px var(--space-md);
+  border: 0.5px solid var(--border-default);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  background: var(--surface-card);
+  outline: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.al-select {
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23888780' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+}
+
+.al-select:focus,
+.al-input:focus {
+  border-color: var(--border-focus);
+  border-width: 1.5px;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 10%, transparent);
+}
+
+/* ─── Main card ──────────────────────────────────────── */
+
+.al-card {
+  background: var(--surface-card);
+  border: 0.5px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+/* ─── Loading ────────────────────────────────────────── */
+
+.al-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-3xl) 0;
+}
+
+/* ─── Table head ─────────────────────────────────────── */
+
+.al-table-head {
+  display: grid;
+  grid-template-columns: 180px 1fr 200px 160px;
+  gap: var(--space-base);
+  padding: 10px var(--space-lg);
+  background: var(--surface-subtle);
+  border-bottom: 0.5px solid var(--border-default);
+}
+
+.al-table-head .label {
+  color: var(--text-muted);
+}
+
+/* ─── Table rows ─────────────────────────────────────── */
+
+.al-table-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.al-table-row {
+  display: grid;
+  grid-template-columns: 180px 1fr 200px 160px;
+  gap: var(--space-base);
+  align-items: center;
+  padding: 14px var(--space-lg);
+  border-bottom: 0.5px solid var(--border-default);
+  transition: background var(--transition-fast);
+}
+
+.al-table-row:last-child {
+  border-bottom: none;
+}
+
+.al-table-row:hover {
+  background: var(--surface-subtle);
+}
+
+.al-table-row__action {
+  display: flex;
+  align-items: center;
+}
+
+.al-table-row__desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.al-table-row__actor {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.al-table-row__actor > div {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.al-table-row__actor-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.al-table-row__actor-role {
+  font-size: 11px;
+}
+
+.al-table-row__time {
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* ─── Action badges ──────────────────────────────────── */
+
+.al-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.al-badge--green {
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
+}
+
+.al-badge--red {
+  background: var(--color-danger-bg);
+  color: var(--color-danger-text);
+}
+
+.al-badge--blue {
+  background: var(--blue-50);
+  color: var(--blue-800);
+}
+
+.al-badge--amber {
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
+}
+
+.al-badge--neutral {
+  background: var(--color-neutral-bg);
+  color: var(--color-neutral-text);
+}
+
+/* ─── Actor avatar ───────────────────────────────────── */
+
+.al-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  font-size: 10px;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.al-avatar--blue  { background: var(--blue-50);   color: var(--blue-800); }
+.al-avatar--amber { background: var(--amber-50);  color: var(--amber-800); }
+
+/* ─── Pagination ─────────────────────────────────────── */
+
+.al-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px var(--space-lg);
+  border-top: 0.5px solid var(--border-default);
+  background: var(--surface-subtle);
+}
+
+.al-pagination__info {
+  font-size: 13px;
+}
+
+.al-pagination__btns {
+  display: flex;
+  gap: var(--space-xs);
+}
+
+/* ─── Icon button ────────────────────────────────────── */
+
+.al-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  border: 0.5px solid var(--border-default);
+  background: var(--surface-card);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  padding: 0;
+}
+
+.al-icon-btn:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+.al-icon-btn:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+}
+
+/* ─── Empty state ────────────────────────────────────── */
+
+.al-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-3xl) var(--space-xl);
+  gap: var(--space-sm);
+  text-align: center;
+}
+
+.al-empty__icon {
+  color: var(--border-default);
+  margin-bottom: var(--space-sm);
+}
+
+.al-empty__title {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.al-empty__sub {
+  font-size: 13px;
+  color: var(--text-muted);
+  max-width: 300px;
+}
+
+/* ─── Spinner ────────────────────────────────────────── */
+
+.al-spinner {
+  display: inline-block;
+  border-radius: 50%;
+  border: 2px solid var(--border-default);
+  border-top-color: var(--color-primary);
+  animation: al-spin 600ms linear infinite;
+}
+
+@keyframes al-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ─── Toast ──────────────────────────────────────────── */
+
+.al-toast {
+  position: fixed;
+  bottom: var(--space-xl);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 10px var(--space-base);
+  border-radius: var(--radius-pill);
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  z-index: 600;
+  white-space: nowrap;
+  animation: al-toast-in 250ms ease;
+}
+
+@keyframes al-toast-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.al-toast--success { background: var(--gray-900); color: #fff; }
+.al-toast--error   { background: var(--red-400);  color: #fff; }
+
+/* ─── Responsive ─────────────────────────────────────── */
+
+@media (max-width: 1024px) {
+  /* Collapse 4-col table to 3 — hide description column */
+  .al-table-head,
+  .al-table-row {
+    grid-template-columns: 160px 200px 140px;
+  }
+
+  .al-table-head .label:nth-child(2),
+  .al-table-row__desc {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .al-main {
+    margin-left: 0;
+  }
+
+  .al-page {
+    padding: var(--space-base);
+  }
+
+  /* Stack filters */
+  .al-filters__grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* Collapse to 2-col table — hide time column */
+  .al-table-head,
+  .al-table-row {
+    grid-template-columns: 140px 1fr;
+  }
+
+  .al-table-head .label:nth-child(3),
+  .al-table-head .label:nth-child(4),
+  .al-table-row__actor,
+  .al-table-row__time {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .al-filters__grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Single column — just badge + description */
+  .al-table-head {
+    display: none;
+  }
+
+  .al-table-row {
+    grid-template-columns: 1fr;
+    gap: var(--space-xs);
+    padding: var(--space-md) var(--space-base);
+  }
+
+  .al-table-row__time {
+    display: block;
+    font-size: 11px;
+  }
+
+  .al-table-row__actor {
+    display: flex;
+  }
+
+  .al-table-row__desc {
+    display: block;
+  }
+}
