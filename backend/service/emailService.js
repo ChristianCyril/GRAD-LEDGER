@@ -2,8 +2,16 @@ import nodemailer from 'nodemailer';
 
 const transporter = nodemailer.createTransport({
   host: process.env.MAIL_HOST,
-  port: Number(process.env.MAIL_PORT),
-  auth: { user: process.env.MAIL_USER, pass: process.env.MAIL_PASS }
+  port: Number(process.env.MAIL_PORT), 
+  secure: false, // MUST be false for port 587
+  auth: { 
+    user: process.env.MAIL_USER, 
+    pass: process.env.MAIL_PASS 
+  },
+  tls: {
+    // This prevents Render's IPv6 resolution from hanging
+    rejectUnauthorized: false
+  }
 });
 
 export const sendPasswordResetEmail = async (toEmail, resetToken) => {
