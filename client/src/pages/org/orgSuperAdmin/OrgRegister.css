@@ -772,9 +772,7 @@
     padding: 0 var(--space-base);
   }
 
-  .reg-topbar__link {
-    display: none;
-  }
+ 
 
   .reg-grid {
     grid-template-columns: 1fr;

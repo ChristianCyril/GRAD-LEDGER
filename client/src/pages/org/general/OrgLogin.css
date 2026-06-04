@@ -378,6 +378,14 @@
     flex-direction: column;
   }
 
+  .brand-return-btn {
+  top: 10px;
+  left: 10px;
+  width: 20px;
+  height: 20px;
+  
+}
+
   .login-panel--brand {
     flex: none;
     min-height: 220px;
