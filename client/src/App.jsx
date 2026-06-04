@@ -33,6 +33,7 @@ export default function App() {
       <Route path='/reset-password' element={<ResetPassword />} />
       <Route path='/org-registration' element={<OrgRegister/>} />
       <Route path='/verify' element={<VerifyPage/>} />
+      <Route path='/verify/:certId' element={<VerifyPage/>} />
 
       <Route element={<PersistLogin />}>
         <Route element={<ProtectedRoute roles={['ORG_SUPER_ADMIN']} />}>
