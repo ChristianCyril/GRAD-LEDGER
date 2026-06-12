@@ -7,9 +7,11 @@ export const signAccessToken = (payload) =>
   });
 
 export const signRefreshToken = (payload) =>
-  jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, {
-    expiresIn: '7d'
-  });
+ jwt.sign(
+  { ...payload, jti: crypto.randomUUID() },
+  process.env.REFRESH_TOKEN_SECRET,
+  { expiresIn: "7d" }
+)
 
 export const verifyAccessToken = (token) =>
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);

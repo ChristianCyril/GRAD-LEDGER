@@ -291,13 +291,13 @@ export const sendAdminCreatedEmail = async (toEmail, adminName, orgName, tempPas
   await transporter.sendMail({
     from: process.env.MAIL_FROM,
     to: toEmail,
-    subject: `Your Admin Account — ${orgName} on Block-Ledger`,
+    subject: `Your Admin Account — ${orgName} on Grad-Ledger`,
     html: `
       <!DOCTYPE html>
       <html>
         <body style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; padding: 24px;">
-          <h2 style="color: #1a1a1a;">Welcome to Block-Ledger, ${adminName}</h2>
-          <p>An admin account has been created for you under <strong>${orgName}</strong> on Block-Ledger.</p>
+          <h2 style="color: #1a1a1a;">Welcome to Grad-Ledger, ${adminName}</h2>
+          <p>An admin account has been created for you under <strong>${orgName}</strong> on Grad-Ledger.</p>
 
           <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; margin: 24px 0;">
             <p style="margin: 0 0 8px 0;"><strong>Login email:</strong> ${toEmail}</p>
@@ -319,7 +319,7 @@ export const sendAdminCreatedEmail = async (toEmail, adminName, orgName, tempPas
                 display: inline-block;
               "
             >
-              Log In to Block-Ledger
+              Log In to Grad-Ledger
             </a>
           </div>
 
@@ -393,7 +393,7 @@ export const sendRevocationEmail = async (toEmail, studentName, orgName) => {
   await transporter.sendMail({
     from: process.env.MAIL_FROM,
     to: toEmail,
-    subject: 'Certificate Revocation Notice — Block-Ledger',
+    subject: 'Certificate Revocation Notice — Grad-Ledger',
     html: `
       <!DOCTYPE html>
       <html>
@@ -405,7 +405,7 @@ export const sendRevocationEmail = async (toEmail, studentName, orgName) => {
 
           <p>
             We are writing to inform you that a certificate previously issued to you by
-            <strong>${orgName}</strong> on the Block-Ledger platform has been revoked.
+            <strong>${orgName}</strong> on the Grad-Ledger platform has been revoked.
           </p>
 
           <div style="
@@ -432,7 +432,7 @@ export const sendRevocationEmail = async (toEmail, studentName, orgName) => {
           </p>
 
           <p>
-            You can also reach the Block-Ledger support team at
+            You can also reach the Grad-Ledger support team at
             <a href="mailto:${process.env.SUPER_ADMIN_EMAIL}">
               ${process.env.SUPER_ADMIN_EMAIL}
             </a>
@@ -442,7 +442,7 @@ export const sendRevocationEmail = async (toEmail, studentName, orgName) => {
           <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />
 
           <p style="font-size: 12px; color: #999;">
-            This is an automated notification from Block-Ledger. Please do not reply
+            This is an automated notification from Grad-Ledger. Please do not reply
             to this email directly.
           </p>
 
@@ -456,7 +456,7 @@ export const sendCertificateUnrevokedEmail = async (toEmail, studentName, orgNam
   await transporter.sendMail({
     from: process.env.MAIL_FROM,
     to: toEmail,
-    subject: 'Certificate Reinstated — Block-Ledger',
+    subject: 'Certificate Reinstated — Grad-Ledger',
     html: `
       <!DOCTYPE html>
       <html>
@@ -468,7 +468,7 @@ export const sendCertificateUnrevokedEmail = async (toEmail, studentName, orgNam
 
           <p>
             We are writing to inform you that a certificate previously revoked by
-            <strong>${orgName}</strong> on the Block-Ledger platform has been reinstated
+            <strong>${orgName}</strong> on the Grad-Ledger platform has been reinstated
             and is now valid again.
           </p>
 
@@ -495,7 +495,7 @@ export const sendCertificateUnrevokedEmail = async (toEmail, studentName, orgNam
           </p>
 
           <p>
-            You can also reach the Block-Ledger support team at
+            You can also reach the Grad-Ledger support team at
             <a href="mailto:${process.env.SUPER_ADMIN_EMAIL}">
               ${process.env.SUPER_ADMIN_EMAIL}
             </a>
@@ -505,7 +505,7 @@ export const sendCertificateUnrevokedEmail = async (toEmail, studentName, orgNam
           <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />
 
           <p style="font-size: 12px; color: #999;">
-            This is an automated notification from Block-Ledger. Please do not reply
+            This is an automated notification from Grad-Ledger. Please do not reply
             to this email directly.
           </p>
 

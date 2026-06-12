@@ -5,3 +5,4 @@ backend/.env
 client/.env
 backend/.env.test
 frontend-design-strategy.md
+_report_extract.txt
