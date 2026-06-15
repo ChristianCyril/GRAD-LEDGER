@@ -128,7 +128,7 @@ export default function OrgAdminSidebar({ open, onClose, org }) {
           </div>
           <div className="osa-sidebar__user-info">
             <span className="osa-sidebar__user-name">{user?.full_name}</span>
-            <span className="osa-sidebar__user-role">Org Super Admin</span>
+            <span className="osa-sidebar__user-role">Org Admin</span>
           </div>
         </div>
 

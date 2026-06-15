@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth';
-import OrgAdminSidebar from '../../../components/OrgSuperAdminSidebar'
+import OrgAdminSidebar from '../../../components/OrgAdminSidebar';
 import './DashboardOrgAdmin.css';
 import Header from '../../../components/Header';
 import useApiPrivate from '../../../hooks/useApiPrivate';
